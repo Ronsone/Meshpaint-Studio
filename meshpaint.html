@@ -4,12 +4,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Meshpaint Studio</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#15161d;color:#eef0fa;font:14px system-ui,sans-serif}button,select,input{font:inherit}button,select{background:#2a2c39;color:inherit;border:1px solid #414354;border-radius:8px;padding:8px;cursor:pointer}button:hover,button.active{border-color:#bb9aff;background:#40345a}button:disabled{opacity:.45}.primary{background:#b89aff;color:#1c1330;font-weight:bold}header{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px;border-bottom:1px solid #363849}header strong{font-size:20px;margin-right:auto}header strong span,a{color:#c4a7ff}main{display:grid;grid-template-columns:95px minmax(0,1fr) 245px;height:calc(100dvh - 111px);min-height:320px}nav,aside{padding:12px;background:#1e202a;overflow:auto}nav button{width:100%;margin-bottom:5px}section{position:relative;min-width:0;background:radial-gradient(ellipse at 50% 45%,#3b4053,#171922 75%)}#mesh{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}#guide{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.controls{flex-wrap:wrap}.controls button{flex:1}.overlay{position:absolute;top:12px;left:12px;background:#21232ee0;padding:8px 12px;border-radius:8px;pointer-events:none}.camera{position:absolute;bottom:12px;right:12px}h2{font-size:14px;margin:0 0 10px}hr{border:0;border-top:1px solid #383a48;margin:16px 0}label{display:block;margin:8px 0;color:#ccd0e1}input[type=range],select{width:100%;accent-color:#c4a7ff}.row{display:flex;align-items:center;gap:6px;margin:6px 0}.row .layer{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.swatches{display:flex;flex-wrap:wrap;gap:5px}.swatches button{width:24px;height:24px;padding:0}.swatches button.active{outline:2px solid white}small,footer{color:#c2c6d9}footer{padding:8px 12px}#saved a{display:inline-block;margin:0 0 8px}#saved a[hidden]{display:none}@media(max-width:680px){main{grid-template-columns:66px minmax(0,1fr) 142px}nav,aside{padding:6px}nav button{font-size:10px}header strong{font-size:16px}header button{font-size:11px}}
+*{box-sizing:border-box}body{margin:0;background:#15161d;color:#eef0fa;font:14px system-ui,sans-serif}button,select,input{font:inherit}button,select{background:#2a2c39;color:inherit;border:1px solid #414354;border-radius:8px;padding:8px;cursor:pointer}button:hover,button.active{border-color:#bb9aff;background:#40345a}button:disabled{opacity:.45}.primary{background:#b89aff;color:#1c1330;font-weight:bold}header{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px;border-bottom:1px solid #363849}header strong{font-size:20px;margin-right:auto}header strong span,a{color:#c4a7ff}main{display:grid;grid-template-columns:95px minmax(0,1fr) 245px;height:calc(100dvh - 111px);min-height:320px}nav,aside{padding:12px;background:#1e202a;overflow:auto}nav button{width:100%;margin-bottom:5px}nav button[data-tool=selectBrush]{font-size:11px;padding-inline:2px;overflow-wrap:anywhere}section{position:relative;min-width:0;background:radial-gradient(ellipse at 50% 45%,#3b4053,#171922 75%)}#mesh{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}#guide{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.controls{flex-wrap:wrap}.controls button{flex:1}.overlay{position:absolute;top:12px;left:12px;background:#21232ee0;padding:8px 12px;border-radius:8px;pointer-events:none}.camera{position:absolute;bottom:12px;right:12px}h2{font-size:14px;margin:0 0 10px}hr{border:0;border-top:1px solid #383a48;margin:16px 0}label{display:block;margin:8px 0;color:#ccd0e1}input[type=range],select{width:100%;accent-color:#c4a7ff}.row{display:flex;align-items:center;gap:6px;margin:6px 0}.row .layer{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.swatches{display:flex;flex-wrap:wrap;gap:5px}.swatches button{width:24px;height:24px;padding:0}.swatches button.active{outline:2px solid white}small,footer{color:#c2c6d9}footer{padding:8px 12px}#saved a{display:inline-block;margin:0 0 8px}#saved a[hidden]{display:none}@media(max-width:680px){main{grid-template-columns:66px minmax(0,1fr) 142px}nav,aside{padding:6px}nav button{font-size:10px}header strong{font-size:16px}header button{font-size:11px}}
 </style>
 <header><strong>Meshpaint <span>Studio</span></strong><button id="open">STL / project openen</button><button id="save">Project opslaan</button><button id="export" class="primary">3MF exporteren</button><input id="file" type="file" accept=".stl,.meshpaint" hidden></header>
 <main>
 <nav aria-label="Gereedschap">
-<button data-tool="brush" title="Penseel (B)">Penseel</button><button data-tool="line" title="Lijn (L)">Lijn</button><button data-tool="curve" title="Curve (C)">Curve</button><button data-tool="wand" title="Toverstaf (W). Shift voegt toe, Alt trekt af.">Toverstaf</button><button data-tool="fill" title="Vullen (G)">Vullen</button><button data-tool="erase" title="Gum (E)">Gum</button><button data-tool="pick" title="Pipet (I)">Pipet</button><button data-tool="orbit" title="Draaien (V)">Draaien</button><hr><button id="undo">Ongedaan</button><button id="redo">Opnieuw</button>
+<button data-tool="brush" title="Penseel (B)">Penseel</button><button data-tool="line" title="Lijn (L)">Lijn</button><button data-tool="curve" title="Curve (C)">Curve</button><button data-tool="selectBrush" title="Selectiepenseel (M). Shift voegt toe, Alt trekt af.">Selectiepenseel</button><button data-tool="wand" title="Toverstaf (W). Shift voegt toe, Alt trekt af.">Toverstaf</button><button data-tool="fill" title="Vullen (G)">Vullen</button><button data-tool="erase" title="Gum (E)">Gum</button><button data-tool="pick" title="Pipet (I)">Pipet</button><button data-tool="orbit" title="Draaien (V)">Draaien</button><hr><button id="undo">Ongedaan</button><button id="redo">Opnieuw</button>
 </nav>
 <section id="view"><canvas id="mesh" aria-label="Schilderbaar 3D-model"></canvas><canvas id="guide" aria-hidden="true"></canvas><div class="overlay"><strong id="name"></strong><br><small id="count"></small></div><button class="camera" id="camera" title="Rechts slepen om te draaien, scrollen om te zoomen">Weergave herstellen</button></section>
 <aside>
@@ -18,7 +18,10 @@
 <hr><label for="shape">Penseelvorm</label><select id="shape"><option value="round">Rond</option><option value="square">Vierkant</option><option value="chisel">Beitel</option></select><div id="rotation" hidden><label for="brushAngle">Draaihoek <output id="brushAngleValue">0</output>°</label><input id="brushAngle" type="range" min="0" max="180" value="0"></div><label for="size">Penseelgrootte <output id="sizeValue">24</output> px</label><input id="size" type="range" min="2" max="100" value="24">
 <label for="angle">Vulhoek <output id="angleValue">25</output>°</label><input id="angle" type="range" min="0" max="90" value="25">
 <hr><h2>Masker</h2><label for="wandMode">Toverstaf selecteert</label><select id="wandMode"><option value="angle">Verbonden binnen vulhoek</option><option value="connected">Los onderdeel</option><option value="color">Verbonden met dezelfde kleur</option><option value="globalColor">Alle vlakken met dezelfde kleur</option></select>
-<label for="maskMode">Selectiebewerking</label><select id="maskMode"><option value="replace">Vervangen</option><option value="add">Toevoegen</option><option value="subtract">Aftrekken</option></select><div class="row controls"><button id="invertMask">Omkeren</button><button id="clearMask">Wissen</button></div><small id="maskCount"></small><hr>
+<label for="maskMode">Selectiebewerking</label><select id="maskMode"><option value="replace">Vervangen</option><option value="add">Toevoegen</option><option value="subtract">Aftrekken</option></select><div class="row controls"><button id="invertMask">Omkeren</button><button id="clearMask">Wissen</button></div><small id="maskCount"></small>
+<label><input type="checkbox" id="maskInspect"> Masker markeren</label>
+<div id="selectionSettings" hidden><label for="selectionGrowth">Uitbreiding <output id="selectionGrowthValue">18</output> px</label><input id="selectionGrowth" type="range" min="0" max="100" value="18">
+<label for="selectionEdge">Randhoek <output id="selectionEdgeValue">24</output>°</label><input id="selectionEdge" type="range" min="1" max="90" value="24"></div><hr>
 <button id="refine" title="Verdeel elke driehoek in vier">Mesh verfijnen ×4</button><hr>
 <div class="row"><h2 style="margin:0 auto 0 0">Lagen</h2><button id="layerAdd" aria-label="Laag toevoegen">+</button></div><div id="layers"></div>
 <div id="saved" hidden><hr><h2>Opgeslagen project</h2><a id="download" hidden>Download .meshpaint</a><button id="restore" hidden>Herstelkopie openen</button></div>
@@ -77,7 +80,7 @@ function makeModel(name, points, faces, layers) {
     const length = Math.hypot(nx, ny, nz) || 1;
     normals[i] = nx / length; normals[i + 1] = ny / length; normals[i + 2] = nz / length;
   }
-  return { name, points, faces, vertices, normals, layers, neighbors: null };
+  return { name, points, faces, vertices, normals, layers, edgeLinks: null };
 }
 function setModel(next, layerIndex = next.layers.length - 1) {
   model = next; active = layerIndex;
@@ -107,6 +110,7 @@ function compose() {
   for (let face = 0; face < colors.length; face++) composeFace(face);
 }
 function resize() {
+  if (stroke?.mode === 'selectBrush') stroke = null;
   const { width, height } = canvas.getBoundingClientRect();
   const scale = Math.min(1, 1000 / Math.max(1, width, height));
   canvas.width = Math.max(1, Math.round(width * scale));
@@ -162,11 +166,12 @@ function rasterize() {
 }
 function draw() {
   if (viewChanged) rasterize();
-  const pixels = screen.data;
+  const pixels = screen.data, marked = $('maskInspect').checked;
   for (let i = 0; i < hits.length; i++) {
     const face = hits[i] - 1, p = i * 4;
     if (face < 0) { pixels[p + 3] = 0; continue; }
-    const color = colors[face], shade = light[face] * (mask && !mask[face] ? .48 : 1);
+    const color = marked && mask?.[face] ? 0x58efcf : colors[face];
+    const shade = light[face] * (mask && !mask[face] ? .48 : 1);
     pixels[p] = (color >> 16) * shade;
     pixels[p + 1] = ((color >> 8) & 255) * shade;
     pixels[p + 2] = (color & 255) * shade;
@@ -176,6 +181,7 @@ function draw() {
   drawGuide();
 }
 function resetCamera() {
+  if (stroke?.mode === 'selectBrush') stroke = null;
   yaw = .42; pitch = .14; zoom = 1;
   anchors = [];
   viewChanged = true;
@@ -246,38 +252,69 @@ $('layerAdd').onclick = () => {
 function edgeKey(a, b, vertexCount) {
   return Math.min(a, b) * vertexCount + Math.max(a, b);
 }
+function getEdgeLinks() {
+  if (model.edgeLinks) return model.edgeLinks;
+  const { faces } = model;
+  const slots = new Uint32Array(2 ** Math.ceil(Math.log2(faces.length * 1.34)));
+  const mask = slots.length - 1, links = new Uint32Array(faces.length);
+  function nextCorner(corner) {
+    return corner % 3 === 2 ? corner - 2 : corner + 1;
+  }
+  for (let corner = 0; corner < faces.length; corner++) {
+    const a = faces[corner], b = faces[nextCorner(corner)];
+    const low = Math.min(a, b), high = Math.max(a, b);
+    const hash = Math.imul(low, 0x9e3779b1) ^ Math.imul(high, 0x85ebca6b);
+    let slot = Math.imul(hash ^ (hash >>> 16), 0x7feb352d);
+    slot = (slot ^ (slot >>> 15)) & mask;
+    while (slots[slot]) {
+      const other = slots[slot] - 1;
+      const c = faces[other], d = faces[nextCorner(other)];
+      if ((a === c && b === d) || (a === d && b === c)) break;
+      slot = (slot + 1) & mask;
+    }
+    const first = slots[slot] - 1;
+    if (first < 0) {
+      slots[slot] = corner + 1;
+      links[corner] = corner;
+    } else {
+      links[corner] = links[first];
+      links[first] = corner;
+    }
+  }
+  model.edgeLinks = links;
+  return links;
+}
+function growFaces(seeds, accepts) {
+  const links = getEdgeLinks(), queue = [...seeds], visited = new Uint8Array(colors.length);
+  for (const face of queue) visited[face] = 1;
+  for (let i = 0; i < queue.length; i++) {
+    const face = queue[i], first = face * 3;
+    for (let corner = first; corner < first + 3; corner++) {
+      for (let edge = links[corner]; edge !== corner; edge = links[edge]) {
+        const next = Math.floor(edge / 3);
+        if (!visited[next] && accepts(face, next)) {
+          visited[next] = 1;
+          queue.push(next);
+        }
+      }
+    }
+  }
+  return queue;
+}
+function normalDot(a, b) {
+  const n = model.normals, i = a * 3, j = b * 3;
+  return n[i] * n[j] + n[i + 1] * n[j + 1] + n[i + 2] * n[j + 2];
+}
+const cosine = degrees => Math.cos(Number(degrees) * Math.PI / 180);
 function connectedFaces(start, mode = 'angle') {
   if (mode === 'globalColor') {
     const matches = [];
     for (let face = 0; face < colors.length; face++) if (colors[face] === colors[start]) matches.push(face);
     return matches;
   }
-  const { faces, points, normals } = model;
-  if (!model.neighbors) {
-    const neighbors = Array.from({ length: faces.length / 3 }, () => []);
-    const edges = new Map();
-    for (let i = 0; i < faces.length; i += 3) {
-      for (let j = 0; j < 3; j++) {
-        const key = edgeKey(faces[i + j], faces[i + (j + 1) % 3], points.length / 3);
-        const previous = edges.get(key), face = i / 3;
-        if (previous === undefined) edges.set(key, face);
-        else if (previous !== face) { neighbors[previous].push(face); neighbors[face].push(previous); }
-      }
-    }
-    model.neighbors = neighbors;
-  }
-  const minimum = Math.cos(Number($('angle').value) * Math.PI / 180), initial = start * 3;
-  const queue = [start], visited = new Set(queue);
-  for (let i = 0; i < queue.length; i++) {
-    for (const next of model.neighbors[queue[i]]) {
-      if (visited.has(next)) continue;
-      visited.add(next);
-      const p = next * 3;
-      const dot = normals[initial] * normals[p] + normals[initial + 1] * normals[p + 1] + normals[initial + 2] * normals[p + 2];
-      if (mode === 'connected' || (mode === 'color' ? colors[next] === colors[start] : dot + 1e-6 >= minimum)) queue.push(next);
-    }
-  }
-  return queue;
+  const minimum = cosine($('angle').value);
+  return growFaces([start], (_, next) => mode === 'connected' ||
+    (mode === 'color' ? colors[next] === colors[start] : normalDot(start, next) + 1e-6 >= minimum));
 }
 $('refine').onclick = () => {
   if (stroke || model.faces.length > limit * 3 / 4) return;
@@ -314,8 +351,10 @@ $('refine').onclick = () => {
 const tools = document.querySelectorAll('[data-tool]');
 function selectTool(next) {
   tool = next;
+  $('selectionSettings').hidden = next !== 'selectBrush';
   anchors = [];
   drawGuide();
+  if (tool === 'selectBrush') status('Trek een streek over het gewenste oppervlak. Shift voegt toe, Alt trekt af.');
   canvas.style.cursor = tool === 'orbit' ? 'grab' : 'crosshair';
   for (const button of tools) button.classList.toggle('active', button.dataset.tool === next);
 }
@@ -336,7 +375,7 @@ for (const color of ['#b095ff', '#f685ab', '#f38167', '#ffc477', '#dafa87', '#8d
 }
 setColor($('color').value);
 $('color').oninput = () => setColor($('color').value);
-for (const key of ['size', 'angle', 'brushAngle']) $(key).oninput = () => { $(key + 'Value').value = $(key).value; drawGuide(); };
+for (const key of ['size', 'angle', 'brushAngle', 'selectionGrowth', 'selectionEdge']) $(key).oninput = () => { $(key + 'Value').value = $(key).value; drawGuide(); };
 function locksUI() {
   const selected = parseInt($('color').value.slice(1), 16);
   const locked = lockedColors.has(selected);
@@ -381,9 +420,11 @@ $('invertMask').onclick = () => {
   if (stroke || !mask) return;
   changeMask(mask.map(value => 1 - value));
 };
-function wand(face, event) {
-  const mode = event.altKey ? 'subtract' : event.shiftKey ? 'add' : $('maskMode').value;
-  const selection = connectedFaces(face, $('wandMode').value);
+$('maskInspect').onchange = draw;
+function selectionMode(event) {
+  return event.altKey ? 'subtract' : event.shiftKey ? 'add' : $('maskMode').value;
+}
+function commitSelection(selection, mode) {
   const next = mode !== 'replace' && mask ? mask.slice() : new Uint8Array(colors.length);
   if (mode === 'subtract' && !mask) next.fill(1);
   const value = mode === 'subtract' ? 0 : 1;
@@ -391,18 +432,21 @@ function wand(face, event) {
   changeMask(next);
   status($('maskCount').textContent + '. Je schildert alleen binnen het masker.');
 }
+function wand(face, event) {
+  commitSelection(connectedFaces(face, $('wandMode').value), selectionMode(event));
+}
 function canPaint(face, layer) {
   return (!mask || mask[face]) && !lockedColors.has(colors[face]) && !lockedColors.has(layer.paint.get(face));
 }
-function brushGeometry() {
+function brushGeometry(extra = 0) {
   const radius = Number($('size').value) * canvas.width / canvas.clientWidth / 2;
   const shape = $('shape').value;
   const angle = Number($('brushAngle').value) * Math.PI / 180;
-  const width = radius, height = radius * (shape === 'chisel' ? .32 : 1);
+  const width = radius + extra, height = radius * (shape === 'chisel' ? .32 : 1) + extra;
   const c = Math.cos(angle), s = Math.sin(angle);
-  const reach = shape === 'round' ? radius : Math.hypot(width, height);
+  const reach = shape === 'round' ? width : Math.hypot(width, height);
   const contains = shape === 'round'
-    ? (x, y) => x * x + y * y <= radius * radius
+    ? (x, y) => x * x + y * y <= width * width
     : (x, y) => Math.abs(x * c + y * s) <= width && Math.abs(-x * s + y * c) <= height;
   return { shape, angle, width, height, reach, contains };
 }
@@ -436,7 +480,7 @@ function drawGuide() {
     context.stroke();
     context.globalAlpha = 1;
   }
-  if (!['brush', 'erase', 'line', 'curve'].includes(tool)) return;
+  if (!['brush', 'erase', 'line', 'curve', 'selectBrush'].includes(tool)) return;
   const { shape, angle, width, height } = brushGeometry();
   context.save();
   context.translate(px, py);
@@ -448,8 +492,19 @@ function drawGuide() {
   context.strokeStyle = '#11131d';
   context.stroke();
   context.lineWidth = 1;
-  context.strokeStyle = '#ffffff';
+  context.strokeStyle = tool === 'selectBrush' ? '#58efcf' : '#ffffff';
   context.stroke();
+  if (tool === 'selectBrush') {
+    const growth = Number($('selectionGrowth').value) * canvas.width / canvas.clientWidth;
+    if (growth > 0) {
+      const limit = brushGeometry(growth);
+      context.setLineDash([4, 4]);
+      context.beginPath();
+      if (shape === 'round') context.arc(0, 0, limit.width, 0, Math.PI * 2);
+      else context.rect(-limit.width, -limit.height, limit.width * 2, limit.height * 2);
+      context.stroke();
+    }
+  }
   context.restore();
 }
 function drawPath(x, y, event) {
@@ -538,7 +593,28 @@ function coversPointInFront(face, x, y, depth) {
   const u = (dx * by - dy * bx) / area, v = (ax * dy - ay * dx) / area;
   return u >= 0 && v >= 0 && u + v <= 1 && z + u * (bz - z) + v * (cz - z) > depth;
 }
-function includeBrushCentroids(selection, x, y, brush, layer, value) {
+function faceCentroid(face) {
+  const { faces } = model, i = face * 3;
+  const a = faces[i] * 3, b = faces[i + 1] * 3, c = faces[i + 2] * 3;
+  return [(projected[a] + projected[b] + projected[c]) / 3, (projected[a + 1] + projected[b + 1] + projected[c + 1]) / 3,
+    (projected[a + 2] + projected[b + 2] + projected[c + 2]) / 3];
+}
+function centerVisible(face, cx, cy, depth, grid) {
+  if (cx < 0 || cy < 0 || cx >= canvas.width || cy >= canvas.height) return false;
+  const { visibility, tiles, wide, columns } = grid;
+  if (!visibility[face]) {
+    const { faces } = model, i = face * 3;
+    const a = faces[i] * 3, b = faces[i + 1] * 3, c = faces[i + 2] * 3;
+    const area = (projected[b] - projected[a]) * (projected[c + 1] - projected[a + 1]) -
+      (projected[b + 1] - projected[a + 1]) * (projected[c] - projected[a]);
+    if (Math.abs(area) < 1e-8) { visibility[face] = 2; return false; }
+    const tile = Math.floor(cy / brushTileSize) * columns + Math.floor(cx / brushTileSize);
+    const inFront = other => other !== face && coversPointInFront(other, cx, cy, depth + 1e-7);
+    visibility[face] = tiles[tile]?.some(inFront) || wide.some(inFront) ? 2 : 1;
+  }
+  return visibility[face] === 1;
+}
+function includeBrushCentroids(selection, x, y, brush, accepts) {
   const { reach: radius, contains } = brush;
   const grid = brushTiles ??= indexBrushTriangles();
   const { columns, rows, tiles, wide, visibility } = grid;
@@ -546,28 +622,13 @@ function includeBrushCentroids(selection, x, y, brush, layer, value) {
   const right = Math.min(columns - 1, Math.floor((x + radius) / brushTileSize));
   const top = Math.max(0, Math.floor((y - radius) / brushTileSize));
   const bottom = Math.min(rows - 1, Math.floor((y + radius) / brushTileSize));
-  const { faces } = model;
   function consider(face, tile) {
-    if (selection.has(face) || !canPaint(face, layer) || layer.paint.get(face) === value || visibility[face] === 2) return;
-    const i = face * 3;
-    const a = faces[i] * 3, b = faces[i + 1] * 3, c = faces[i + 2] * 3;
-    const cx = (projected[a] + projected[b] + projected[c]) / 3;
-    const cy = (projected[a + 1] + projected[b + 1] + projected[c + 1]) / 3;
-    if (!contains(cx - x, cy - y) ||
-        cx < 0 || cy < 0 || cx >= canvas.width || cy >= canvas.height) return;
+    if (selection.has(face) || visibility[face] === 2 || !accepts(face)) return;
+    const [cx, cy, depth] = faceCentroid(face);
+    if (!contains(cx - x, cy - y)) return;
     const centerTile = Math.floor(cy / brushTileSize) * columns + Math.floor(cx / brushTileSize);
     if (tile !== undefined && centerTile !== tile) return;
-    if (!visibility[face]) {
-      const area = (projected[b] - projected[a]) * (projected[c + 1] - projected[a + 1]) -
-        (projected[b + 1] - projected[a + 1]) * (projected[c] - projected[a]);
-      if (Math.abs(area) < 1e-8) { visibility[face] = 2; return; }
-      // Compare at the same fractional screen coordinate, with a tolerance
-      // for Float32 projection rounding at edges and coplanar surfaces.
-      const depth = (projected[a + 2] + projected[b + 2] + projected[c + 2]) / 3 + 1e-7;
-      const inFront = other => other !== face && coversPointInFront(other, cx, cy, depth);
-      visibility[face] = tiles[centerTile]?.some(inFront) || wide.some(inFront) ? 2 : 1;
-    }
-    if (visibility[face] === 1) selection.add(face);
+    if (centerVisible(face, cx, cy, depth, grid)) selection.add(face);
   }
   for (let row = top; row <= bottom; row++) {
     for (let col = left; col <= right; col++) {
@@ -578,26 +639,59 @@ function includeBrushCentroids(selection, x, y, brush, layer, value) {
   }
   for (const face of wide) consider(face);
 }
-function applyStroke(x, y) {
-  const [px, py] = pixelCoords(x, y);
-  const { mode, layer, value, changes } = stroke;
-  const hitFace = faceAt(x, y);
-  if (mode === 'pick') { if (hitFace >= 0) setColor(hex(colors[hitFace])); return; }
-  let faces;
-  if (mode === 'fill') faces = hitFace >= 0 ? connectedFaces(hitFace) : [];
-  else {
-    const brush = brushGeometry(), radius = brush.reach;
-    const x = Math.floor(px), y = Math.floor(py);
-    const margin = Math.ceil(radius);
-    faces = new Set();
-    for (let row = Math.max(0, y - margin); row <= Math.min(canvas.height - 1, y + margin); row++) {
-      for (let col = Math.max(0, x - margin); col <= Math.min(canvas.width - 1, x + margin); col++) {
-        const hit = hits[row * canvas.width + col];
-        if (hit && brush.contains(col - x, row - y)) faces.add(hit - 1);
+function brushFaces(px, py, brush, accepts) {
+  const x = Math.floor(px), y = Math.floor(py), margin = Math.ceil(brush.reach);
+  const selection = new Set();
+  for (let row = Math.max(0, y - margin); row <= Math.min(canvas.height - 1, y + margin); row++) {
+    for (let col = Math.max(0, x - margin); col <= Math.min(canvas.width - 1, x + margin); col++) {
+      const hit = hits[row * canvas.width + col];
+      if (hit && brush.contains(col - x, row - y) && accepts(hit - 1)) selection.add(hit - 1);
+    }
+  }
+  includeBrushCentroids(selection, x + .5, y + .5, brush, accepts);
+  return selection;
+}
+function finishSelectionBrush(dabs, operation) {
+  const seeds = new Set();
+  for (const [x, y] of dabs) {
+    const face = faceAt(x, y);
+    if (face >= 0) seeds.add(face);
+  }
+  if (!seeds.size) {
+    status('Geen zichtbaar vlak geraakt. Trek de streek over het model.');
+    return;
+  }
+  const { width, height } = canvas;
+  const growth = Number($('selectionGrowth').value) * width / canvas.clientWidth;
+  const brush = brushGeometry(growth), margin = Math.ceil(brush.reach), area = new Uint8Array(width * height);
+  let lastX, lastY;
+  for (const dab of dabs) {
+    const [x, y] = pixelCoords(...dab).map(Math.floor);
+    if (x === lastX && y === lastY) continue;
+    lastX = x; lastY = y;
+    for (let j = Math.max(0, y - margin); j <= Math.min(height - 1, y + margin); j++) {
+      for (let i = Math.max(0, x - margin); i <= Math.min(width - 1, x + margin); i++) {
+        const pixel = j * width + i;
+        if (!area[pixel] && brush.contains(i - x, j - y)) area[pixel] = 1;
       }
     }
-    includeBrushCentroids(faces, x + .5, y + .5, brush, layer, value);
   }
+  const minimum = cosine($('selectionEdge').value);
+  const grid = brushTiles ??= indexBrushTriangles();
+  const selection = growFaces(seeds, (from, to) => {
+    if (normalDot(from, to) + 1e-6 < minimum) return false;
+    const [x, y, z] = faceCentroid(to);
+    if (x < 0 || y < 0 || x >= width || y >= height || !area[Math.floor(y) * width + Math.floor(x)]) return false;
+    return centerVisible(to, x, y, z, grid);
+  });
+  commitSelection(selection, operation);
+}
+function applyStroke(x, y) {
+  const { mode, layer, value, changes } = stroke;
+  const hit = faceAt(x, y);
+  if (mode === 'pick') { if (hit >= 0) setColor(hex(colors[hit])); return; }
+  const faces = mode === 'fill' ? (hit >= 0 ? connectedFaces(hit) : []) :
+    brushFaces(...pixelCoords(x, y), brushGeometry(), face => canPaint(face, layer) && layer.paint.get(face) !== value);
   for (const face of faces) {
     if (!canPaint(face, layer)) continue;
     const previous = layer.paint.get(face);
@@ -610,12 +704,17 @@ canvas.oncontextmenu = event => event.preventDefault();
 canvas.onpointerdown = event => {
   if (stroke || event.button > 2) return;
   const mode = event.button === 0 ? tool : 'orbit', layer = model.layers[active];
-  if (mode !== 'orbit' && mode !== 'pick' && mode !== 'wand' && !layer.visible) { status('Maak de actieve laag zichtbaar om te schilderen.'); return; }
+  if (mode !== 'orbit' && mode !== 'pick' && mode !== 'wand' && mode !== 'selectBrush' && !layer.visible) { status('Maak de actieve laag zichtbaar om te schilderen.'); return; }
   const [x, y] = pointerCoords(event);
   hover = [x, y];
   if (mode === 'wand') {
     const face = faceAt(x, y);
     if (face >= 0) wand(face, event);
+    return;
+  }
+  if (mode === 'selectBrush') {
+    stroke = { id: event.pointerId, mode, x, y, dabs: [[x, y]], operation: selectionMode(event) };
+    canvas.setPointerCapture(event.pointerId);
     return;
   }
   if (mode === 'line' || mode === 'curve') { drawPath(x, y, event); return; }
@@ -630,7 +729,11 @@ canvas.onpointermove = event => {
   hover = [x, y];
   if (stroke?.id !== event.pointerId || !stroke) { drawGuide(); return; }
   const dx = x - stroke.x, dy = y - stroke.y;
-  if (stroke.mode === 'orbit') {
+  if (stroke.mode === 'selectBrush') {
+    const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / brushSpacing()));
+    for (let i = 1; i <= steps; i++) stroke.dabs.push([stroke.x + dx * i / steps, stroke.y + dy * i / steps]);
+    drawGuide();
+  } else if (stroke.mode === 'orbit') {
     yaw += dx * .012; pitch += dy * .012; viewChanged = true; draw();
   } else if (stroke.mode === 'brush' || stroke.mode === 'erase') {
     const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / brushSpacing()));
@@ -641,8 +744,12 @@ canvas.onpointermove = event => {
 };
 function finishStroke(event) {
   if (!stroke || stroke.id !== event.pointerId) return;
-  const { mode, changes, layer, value } = stroke;
+  const { mode, changes, layer, value, dabs, operation } = stroke;
   stroke = null;
+  if (mode === 'selectBrush') {
+    if (event.type === 'pointerup') finishSelectionBrush(dabs, operation);
+    return;
+  }
   if (!changes.size) {
     if (mode !== 'orbit' && mode !== 'pick' && (mask || lockedColors.size)) {
       status('Geen vlakken gewijzigd. Controleer het masker en de kleurvergrendeling.');
@@ -659,6 +766,7 @@ canvas.onpointerup = canvas.onpointercancel = canvas.onlostpointercapture = fini
 canvas.onpointerleave = () => { hover = null; drawGuide(); };
 canvas.addEventListener('wheel', event => {
   event.preventDefault();
+  if (stroke?.mode === 'selectBrush') return;
   anchors = [];
   zoom = Math.max(.2, Math.min(12, zoom * Math.exp(-event.deltaY * .001)));
   viewChanged = true; draw();
@@ -675,7 +783,7 @@ document.addEventListener('keydown', event => {
     }
     return;
   }
-  const next = { b: 'brush', g: 'fill', e: 'erase', i: 'pick', v: 'orbit', l: 'line', c: 'curve', w: 'wand' }[key];
+  const next = { b: 'brush', g: 'fill', e: 'erase', i: 'pick', v: 'orbit', l: 'line', c: 'curve', w: 'wand', m: 'selectBrush' }[key];
   if (next) selectTool(next);
 });
 async function readBinarySTL(data, count, progress) {
