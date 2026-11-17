@@ -113,6 +113,7 @@ function resize() {
   if (model) draw();
 }
 function rasterize() {
+  brushTiles = null;
   const width = canvas.width, height = canvas.height;
   const size = Math.min(width, height) * .74 * zoom;
   const a = Math.cos(yaw), b = Math.sin(yaw), c = Math.cos(pitch), d = Math.sin(pitch);
@@ -323,6 +324,89 @@ function pointerCoords(event) {
   const box = canvas.getBoundingClientRect();
   return [event.clientX - box.left, event.clientY - box.top];
 }
+// Index projected geometry separately from the display pixels. A triangle can
+// fall between pixel centers at this zoom and still be inside the brush.
+const brushTileSize = 4;
+let brushTiles;
+function indexBrushTriangles() {
+  const columns = Math.ceil(canvas.width / brushTileSize);
+  const rows = Math.ceil(canvas.height / brushTileSize);
+  const tiles = new Array(columns * rows), wide = [];
+  const { faces } = model;
+  for (let i = 0; i < faces.length; i += 3) {
+    const a = faces[i] * 3, b = faces[i + 1] * 3, c = faces[i + 2] * 3;
+    const left = Math.max(0, Math.floor(Math.min(projected[a], projected[b], projected[c]) / brushTileSize));
+    const right = Math.min(columns - 1, Math.floor(Math.max(projected[a], projected[b], projected[c]) / brushTileSize));
+    const top = Math.max(0, Math.floor(Math.min(projected[a + 1], projected[b + 1], projected[c + 1]) / brushTileSize));
+    const bottom = Math.min(rows - 1, Math.floor(Math.max(projected[a + 1], projected[b + 1], projected[c + 1]) / brushTileSize));
+    if (left > right || top > bottom) continue;
+    const face = i / 3;
+    if ((right - left + 1) * (bottom - top + 1) > 64) {
+      wide.push(face);
+      continue;
+    }
+    for (let row = top; row <= bottom; row++) {
+      for (let col = left; col <= right; col++) {
+        const tile = row * columns + col;
+        (tiles[tile] ??= []).push(face);
+      }
+    }
+  }
+  return { columns, rows, tiles, wide, visibility: new Uint8Array(faces.length / 3) };
+}
+function coversPointInFront(face, x, y, depth) {
+  const { faces } = model;
+  const i = face * 3;
+  const a = faces[i] * 3, b = faces[i + 1] * 3, c = faces[i + 2] * 3;
+  const z = projected[a + 2], bz = projected[b + 2], cz = projected[c + 2];
+  if (Math.max(z, bz, cz) <= depth) return false;
+  const ax = projected[b] - projected[a], ay = projected[b + 1] - projected[a + 1];
+  const bx = projected[c] - projected[a], by = projected[c + 1] - projected[a + 1];
+  const area = ax * by - ay * bx;
+  if (Math.abs(area) < 1e-8) return false;
+  const dx = x - projected[a], dy = y - projected[a + 1];
+  const u = (dx * by - dy * bx) / area, v = (ax * dy - ay * dx) / area;
+  return u >= 0 && v >= 0 && u + v <= 1 && z + u * (bz - z) + v * (cz - z) > depth;
+}
+function includeBrushCentroids(selection, x, y, radius, layer, value) {
+  const grid = brushTiles ??= indexBrushTriangles();
+  const { columns, rows, tiles, wide, visibility } = grid;
+  const left = Math.max(0, Math.floor((x - radius) / brushTileSize));
+  const right = Math.min(columns - 1, Math.floor((x + radius) / brushTileSize));
+  const top = Math.max(0, Math.floor((y - radius) / brushTileSize));
+  const bottom = Math.min(rows - 1, Math.floor((y + radius) / brushTileSize));
+  const { faces } = model;
+  function consider(face, tile) {
+    if (selection.has(face) || layer.paint.get(face) === value || visibility[face] === 2) return;
+    const i = face * 3;
+    const a = faces[i] * 3, b = faces[i + 1] * 3, c = faces[i + 2] * 3;
+    const cx = (projected[a] + projected[b] + projected[c]) / 3;
+    const cy = (projected[a + 1] + projected[b + 1] + projected[c + 1]) / 3;
+    if ((cx - x) ** 2 + (cy - y) ** 2 > radius ** 2 ||
+        cx < 0 || cy < 0 || cx >= canvas.width || cy >= canvas.height) return;
+    const centerTile = Math.floor(cy / brushTileSize) * columns + Math.floor(cx / brushTileSize);
+    if (tile !== undefined && centerTile !== tile) return;
+    if (!visibility[face]) {
+      const area = (projected[b] - projected[a]) * (projected[c + 1] - projected[a + 1]) -
+        (projected[b + 1] - projected[a + 1]) * (projected[c] - projected[a]);
+      if (Math.abs(area) < 1e-8) { visibility[face] = 2; return; }
+      // Compare at the same fractional screen coordinate, with a tolerance
+      // for Float32 projection rounding at edges and coplanar surfaces.
+      const depth = (projected[a + 2] + projected[b + 2] + projected[c + 2]) / 3 + 1e-7;
+      const inFront = other => other !== face && coversPointInFront(other, cx, cy, depth);
+      visibility[face] = tiles[centerTile]?.some(inFront) || wide.some(inFront) ? 2 : 1;
+    }
+    if (visibility[face] === 1) selection.add(face);
+  }
+  for (let row = top; row <= bottom; row++) {
+    for (let col = left; col <= right; col++) {
+      const tile = row * columns + col;
+      const candidates = tiles[tile];
+      if (candidates) for (const face of candidates) consider(face, tile);
+    }
+  }
+  for (const face of wide) consider(face);
+}
 function applyStroke(x, y) {
   const ratio = canvas.width / canvas.clientWidth;
   x = Math.floor(x * ratio); y = Math.floor(y * canvas.height / canvas.clientHeight);
@@ -333,7 +417,8 @@ function applyStroke(x, y) {
   let faces;
   if (mode === 'fill') faces = id ? connectedFaces(id - 1) : [];
   else {
-    const radius = Math.round(Number($('size').value) * ratio / 2);
+    const brushRadius = Number($('size').value) * ratio / 2;
+    const radius = Math.round(brushRadius);
     faces = new Set();
     for (let row = Math.max(0, y - radius); row <= Math.min(canvas.height - 1, y + radius); row++) {
       for (let col = Math.max(0, x - radius); col <= Math.min(canvas.width - 1, x + radius); col++) {
@@ -341,6 +426,7 @@ function applyStroke(x, y) {
         if (hit && (col - x) ** 2 + (row - y) ** 2 <= radius ** 2) faces.add(hit - 1);
       }
     }
+    includeBrushCentroids(faces, x + .5, y + .5, brushRadius, layer, value);
   }
   for (const face of faces) {
     const previous = layer.paint.get(face);
