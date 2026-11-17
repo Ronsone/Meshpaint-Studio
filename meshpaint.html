@@ -4,12 +4,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Meshpaint Studio</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#15161d;color:#eef0fa;font:14px system-ui,sans-serif}button,select,input{font:inherit}button,select{background:#2a2c39;color:inherit;border:1px solid #414354;border-radius:8px;padding:8px;cursor:pointer}button:hover,button.active{border-color:#bb9aff;background:#40345a}button:disabled{opacity:.45}.primary{background:#b89aff;color:#1c1330;font-weight:bold}header{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px;border-bottom:1px solid #363849}header strong{font-size:20px;margin-right:auto}header strong span,a{color:#c4a7ff}main{display:grid;grid-template-columns:95px minmax(0,1fr) 245px;height:calc(100dvh - 111px);min-height:320px}nav,aside{padding:12px;background:#1e202a;overflow:auto}nav button{width:100%;margin-bottom:5px}nav button[data-tool=selectBrush]{font-size:11px;padding-inline:2px;overflow-wrap:anywhere}section{position:relative;min-width:0;background:radial-gradient(ellipse at 50% 45%,#3b4053,#171922 75%)}#mesh{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}#guide{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.controls{flex-wrap:wrap}.controls button{flex:1}.overlay{position:absolute;top:12px;left:12px;background:#21232ee0;padding:8px 12px;border-radius:8px;pointer-events:none}.camera{position:absolute;bottom:12px;right:12px}h2{font-size:14px;margin:0 0 10px}hr{border:0;border-top:1px solid #383a48;margin:16px 0}label{display:block;margin:8px 0;color:#ccd0e1}input[type=range],select{width:100%;accent-color:#c4a7ff}.row{display:flex;align-items:center;gap:6px;margin:6px 0}.row .layer{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.swatches{display:flex;flex-wrap:wrap;gap:5px}.swatches button{width:24px;height:24px;padding:0}.swatches button.active{outline:2px solid white}small,footer{color:#c2c6d9}footer{padding:8px 12px}#saved a{display:inline-block;margin:0 0 8px}#saved a[hidden]{display:none}@media(max-width:680px){main{grid-template-columns:66px minmax(0,1fr) 142px}nav,aside{padding:6px}nav button{font-size:10px}header strong{font-size:16px}header button{font-size:11px}}
+*{box-sizing:border-box}body{margin:0;background:#15161d;color:#eef0fa;font:14px system-ui,sans-serif}button,select,input{font:inherit}button,select{background:#2a2c39;color:inherit;border:1px solid #414354;border-radius:8px;padding:8px;cursor:pointer}button:hover,button.active{border-color:#bb9aff;background:#40345a}button:disabled{opacity:.45}.primary{background:#b89aff;color:#1c1330;font-weight:bold}header{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px;border-bottom:1px solid #363849}header strong{font-size:20px;margin-right:auto}header strong span,a{color:#c4a7ff}main{display:grid;grid-template-columns:95px minmax(0,1fr) 245px;height:calc(100dvh - 111px);min-height:320px}nav,aside{padding:12px;background:#1e202a;overflow:auto}nav button{width:100%;margin-bottom:5px}nav button:is([data-tool=selectBrush],[data-tool=smartMask],[data-tool=contour]){font-size:11px;padding-inline:2px;overflow-wrap:anywhere}section{position:relative;min-width:0;background:radial-gradient(ellipse at 50% 45%,#3b4053,#171922 75%)}#mesh{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}#guide{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.controls{flex-wrap:wrap}.controls button{flex:1}.overlay{position:absolute;top:12px;left:12px;background:#21232ee0;padding:8px 12px;border-radius:8px;pointer-events:none}.camera{position:absolute;bottom:12px;right:12px}h2{font-size:14px;margin:0 0 10px}hr{border:0;border-top:1px solid #383a48;margin:16px 0}label{display:block;margin:8px 0;color:#ccd0e1}input[type=range],select{width:100%;accent-color:#c4a7ff}.row{display:flex;align-items:center;gap:6px;margin:6px 0}.row .layer{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.swatches{display:flex;flex-wrap:wrap;gap:5px}.swatches button{width:24px;height:24px;padding:0}.swatches button.active{outline:2px solid white}small,footer{color:#c2c6d9}footer{padding:8px 12px}#saved a{display:inline-block;margin:0 0 8px}#saved a[hidden]{display:none}@media(max-width:680px){main{grid-template-columns:66px minmax(0,1fr) 142px}nav,aside{padding:6px}nav button{font-size:10px}header strong{font-size:16px}header button{font-size:11px}}
 </style>
 <header><strong>Meshpaint <span>Studio</span></strong><button id="open">STL / project openen</button><button id="save">Project opslaan</button><button id="export" class="primary">3MF exporteren</button><input id="file" type="file" accept=".stl,.meshpaint" hidden></header>
 <main>
 <nav aria-label="Gereedschap">
-<button data-tool="brush" title="Penseel (B)">Penseel</button><button data-tool="line" title="Lijn (L)">Lijn</button><button data-tool="curve" title="Curve (C)">Curve</button><button data-tool="selectBrush" title="Selectiepenseel (M). Shift voegt toe, Alt trekt af.">Selectiepenseel</button><button data-tool="wand" title="Toverstaf (W). Shift voegt toe, Alt trekt af.">Toverstaf</button><button data-tool="fill" title="Vullen (G)">Vullen</button><button data-tool="erase" title="Gum (E)">Gum</button><button data-tool="pick" title="Pipet (I)">Pipet</button><button data-tool="orbit" title="Draaien (V)">Draaien</button><hr><button id="undo">Ongedaan</button><button id="redo">Opnieuw</button>
+<button data-tool="brush" title="Penseel (B)">Penseel</button><button data-tool="line" title="Lijn (L)">Lijn</button><button data-tool="curve" title="Curve (C)">Curve</button><button data-tool="selectBrush" title="Selectiepenseel (M). Shift voegt toe, Alt trekt af.">Selectiepenseel</button><button data-tool="smartMask" title="Slim masker (S)">Slim masker +/−</button><button data-tool="contour" title="Contour bijwerken (T)">Contour bijwerken</button><button data-tool="wand" title="Toverstaf (W). Shift voegt toe, Alt trekt af.">Toverstaf</button><button data-tool="fill" title="Vullen (G)">Vullen</button><button data-tool="erase" title="Gum (E)">Gum</button><button data-tool="pick" title="Pipet (I)">Pipet</button><button data-tool="orbit" title="Draaien (V)">Draaien</button><hr><button id="undo">Ongedaan</button><button id="redo">Opnieuw</button>
 </nav>
 <section id="view"><canvas id="mesh" aria-label="Schilderbaar 3D-model"></canvas><canvas id="guide" aria-hidden="true"></canvas><div class="overlay"><strong id="name"></strong><br><small id="count"></small></div><button class="camera" id="camera" title="Rechts slepen om te draaien, scrollen om te zoomen">Weergave herstellen</button></section>
 <aside>
@@ -21,7 +21,12 @@
 <label for="maskMode">Selectiebewerking</label><select id="maskMode"><option value="replace">Vervangen</option><option value="add">Toevoegen</option><option value="subtract">Aftrekken</option></select><div class="row controls"><button id="invertMask">Omkeren</button><button id="clearMask">Wissen</button></div><small id="maskCount"></small>
 <label><input type="checkbox" id="maskInspect"> Masker markeren</label>
 <div id="selectionSettings" hidden><label for="selectionGrowth">Uitbreiding <output id="selectionGrowthValue">18</output> px</label><input id="selectionGrowth" type="range" min="0" max="100" value="18">
-<label for="selectionEdge">Randhoek <output id="selectionEdgeValue">24</output>°</label><input id="selectionEdge" type="range" min="1" max="90" value="24"></div><hr>
+<label for="selectionEdge">Randhoek <output id="selectionEdgeValue">24</output>°</label><input id="selectionEdge" type="range" min="1" max="90" value="24"></div>
+<div id="smartSettings" hidden><label for="seedMode">Markering</label><select id="seedMode"><option value="1">+ Meenemen</option><option value="-1">− Uitsluiten</option></select>
+<label for="smartReach">Bereik <output id="smartReachValue">6</output>% van model</label><input id="smartReach" type="range" min="1" max="25" value="6">
+<div class="row controls"><button id="maskSuggest">Voorstel tonen</button><button id="maskApply">Toepassen</button></div><button id="seedClear">Markeringen wissen</button><br><small id="seedCount"></small></div>
+<div id="contourSettings" hidden><label for="contourMode">Contourbewerking</label><select id="contourMode"><option value="expand">Uitbreiden</option><option value="shrink">Inkrimpen</option><option value="smooth">Glad maken</option><option value="snap">Naar scherpe rand</option></select>
+<label for="contourSteps">Sterkte <output id="contourStepsValue">2</output> stappen</label><input id="contourSteps" type="range" min="1" max="10" value="2"></div><hr>
 <button id="refine" title="Verdeel elke driehoek in vier">Mesh verfijnen ×4</button><hr>
 <div class="row"><h2 style="margin:0 auto 0 0">Lagen</h2><button id="layerAdd" aria-label="Laag toevoegen">+</button></div><div id="layers"></div>
 <div id="saved" hidden><hr><h2>Opgeslagen project</h2><a id="download" hidden>Download .meshpaint</a><button id="restore" hidden>Herstelkopie openen</button></div>
@@ -43,7 +48,7 @@ const hex = color => '#' + color.toString(16).padStart(6, '0').toUpperCase();
 const newLayer = name => ({ name, visible: true, paint: new Map() });
 
 let model, active = 0, palette = [], tool = 'brush', stroke;
-let mask = null, lockedColors = new Set(), anchors = [], hover = null;
+let mask = null, proposedMask = null, lockedColors = new Set(), anchors = [], hover = null;
 let undo = [], redo = [];
 let yaw = .42, pitch = .14, zoom = 1;
 let screen, depths, hits, projected, light, colors;
@@ -80,10 +85,10 @@ function makeModel(name, points, faces, layers) {
     const length = Math.hypot(nx, ny, nz) || 1;
     normals[i] = nx / length; normals[i + 1] = ny / length; normals[i + 2] = nz / length;
   }
-  return { name, points, faces, vertices, normals, layers, edgeLinks: null };
+  return { name, points, faces, vertices, normals, layers, edgeLinks: null, maskMarks: new Map() };
 }
 function setModel(next, layerIndex = next.layers.length - 1) {
-  model = next; active = layerIndex;
+  model = next; active = layerIndex; proposedMask = null;
   colors = new Uint32Array(model.faces.length / 3);
   light = new Float32Array(colors.length);
   projected = new Float32Array(model.vertices.length);
@@ -94,6 +99,7 @@ function setModel(next, layerIndex = next.layers.length - 1) {
   compose();
   layersUI();
   maskUI();
+  smartUI();
   draw();
 }
 function composeFace(face) {
@@ -110,7 +116,7 @@ function compose() {
   for (let face = 0; face < colors.length; face++) composeFace(face);
 }
 function resize() {
-  if (stroke?.mode === 'selectBrush') stroke = null;
+  if (isMaskStroke(stroke?.mode)) stroke = null;
   const { width, height } = canvas.getBoundingClientRect();
   const scale = Math.min(1, 1000 / Math.max(1, width, height));
   canvas.width = Math.max(1, Math.round(width * scale));
@@ -166,12 +172,15 @@ function rasterize() {
 }
 function draw() {
   if (viewChanged) rasterize();
-  const pixels = screen.data, marked = $('maskInspect').checked;
+  const pixels = screen.data, viewMask = proposedMask ?? mask;
+  const marked = Boolean(proposedMask) || $('maskInspect').checked;
+  const marks = tool === 'smartMask' && !proposedMask ? model.maskMarks : null;
   for (let i = 0; i < hits.length; i++) {
     const face = hits[i] - 1, p = i * 4;
     if (face < 0) { pixels[p + 3] = 0; continue; }
-    const color = marked && mask?.[face] ? 0x58efcf : colors[face];
-    const shade = light[face] * (mask && !mask[face] ? .48 : 1);
+    const mark = marks?.get(face);
+    const color = mark ? (mark > 0 ? 0x68ef96 : 0xff6a88) : marked && viewMask?.[face] ? 0x58efcf : colors[face];
+    const shade = light[face] * (viewMask && !viewMask[face] && !mark ? .48 : 1);
     pixels[p] = (color >> 16) * shade;
     pixels[p + 1] = ((color >> 8) & 255) * shade;
     pixels[p + 2] = (color & 255) * shade;
@@ -181,7 +190,7 @@ function draw() {
   drawGuide();
 }
 function resetCamera() {
-  if (stroke?.mode === 'selectBrush') stroke = null;
+  if (isMaskStroke(stroke?.mode)) stroke = null;
   yaw = .42; pitch = .14; zoom = 1;
   anchors = [];
   viewChanged = true;
@@ -199,10 +208,12 @@ function record(before, after) {
 }
 function replay(from, to, key) {
   if (stroke || !from.length) return;
+  proposedMask = null;
   const action = from.pop();
   action[key]();
   to.push(action);
   layersUI();
+  smartUI();
   draw();
 }
 $('undo').onclick = () => replay(undo, redo, 'before');
@@ -352,8 +363,14 @@ const tools = document.querySelectorAll('[data-tool]');
 function selectTool(next) {
   tool = next;
   $('selectionSettings').hidden = next !== 'selectBrush';
+  $('smartSettings').hidden = next !== 'smartMask';
+  $('contourSettings').hidden = next !== 'contour';
+  proposedMask = null;
+  if (model) { smartUI(); draw(); }
   anchors = [];
   drawGuide();
+  if (tool === 'smartMask') status('Markeer met Shift wat erbij hoort en met Alt wat buiten het masker blijft. Kies daarna Voorstel tonen.');
+  if (tool === 'contour') status('Kies een bewerking en trek een streek over de rand van een actief masker.');
   if (tool === 'selectBrush') status('Trek een streek over het gewenste oppervlak. Shift voegt toe, Alt trekt af.');
   canvas.style.cursor = tool === 'orbit' ? 'grab' : 'crosshair';
   for (const button of tools) button.classList.toggle('active', button.dataset.tool === next);
@@ -375,7 +392,9 @@ for (const color of ['#b095ff', '#f685ab', '#f38167', '#ffc477', '#dafa87', '#8d
 }
 setColor($('color').value);
 $('color').oninput = () => setColor($('color').value);
-for (const key of ['size', 'angle', 'brushAngle', 'selectionGrowth', 'selectionEdge']) $(key).oninput = () => { $(key + 'Value').value = $(key).value; drawGuide(); };
+for (const key of ['size', 'angle', 'brushAngle', 'selectionGrowth', 'selectionEdge', 'smartReach', 'contourSteps']) $(key).oninput = () => { $(key + 'Value').value = $(key).value;
+  if (key === 'smartReach' && proposedMask) { proposedMask = null; smartUI(); draw(); }
+  else drawGuide(); };
 function locksUI() {
   const selected = parseInt($('color').value.slice(1), 16);
   const locked = lockedColors.has(selected);
@@ -409,8 +428,9 @@ function maskUI() {
   $('maskCount').textContent = mask ? count.toLocaleString('nl-NL') + ' driehoeken geselecteerd' : 'Geen actief masker';
 }
 function changeMask(next) {
+  proposedMask = null;
   const previous = mask;
-  function apply(value) { mask = value; maskUI(); }
+  function apply(value) { mask = value; maskUI(); smartUI(); }
   apply(next);
   record(() => apply(previous), () => apply(next));
   draw();
@@ -462,6 +482,9 @@ function faceAt(x, y) {
   if (px < 0 || py < 0 || px >= canvas.width || py >= canvas.height) return -1;
   return hits[py * canvas.width + px] - 1;
 }
+function isMaskStroke(mode) {
+  return mode === 'selectBrush' || mode === 'smartMask' || mode === 'contour';
+}
 function drawGuide() {
   guideContext.clearRect(0, 0, guide.width, guide.height);
   if (!hover || (stroke && stroke.mode === 'orbit')) return;
@@ -480,7 +503,7 @@ function drawGuide() {
     context.stroke();
     context.globalAlpha = 1;
   }
-  if (!['brush', 'erase', 'line', 'curve', 'selectBrush'].includes(tool)) return;
+  if (!['brush', 'erase', 'line', 'curve'].includes(tool) && !isMaskStroke(tool)) return;
   const { shape, angle, width, height } = brushGeometry();
   context.save();
   context.translate(px, py);
@@ -492,7 +515,7 @@ function drawGuide() {
   context.strokeStyle = '#11131d';
   context.stroke();
   context.lineWidth = 1;
-  context.strokeStyle = tool === 'selectBrush' ? '#58efcf' : '#ffffff';
+  context.strokeStyle = isMaskStroke(tool) ? '#58efcf' : '#ffffff';
   context.stroke();
   if (tool === 'selectBrush') {
     const growth = Number($('selectionGrowth').value) * canvas.width / canvas.clientWidth;
@@ -651,6 +674,165 @@ function brushFaces(px, py, brush, accepts) {
   includeBrushCentroids(selection, x + .5, y + .5, brush, accepts);
   return selection;
 }
+function editableFaces(dabs, accepts) {
+  const brush = brushGeometry(), faces = new Set();
+  for (const dab of dabs) {
+    const touched = brushFaces(...pixelCoords(...dab), brush, face => !faces.has(face) && accepts(face));
+    for (const face of touched) faces.add(face);
+  }
+  return faces;
+}
+function smartUI() {
+  const marks = model?.maskMarks;
+  let included = 0, excluded = 0;
+  if (marks) for (const sign of marks.values()) sign > 0 ? included++ : excluded++;
+  $('seedCount').textContent = '+' + included.toLocaleString('nl-NL') + ' / −' + excluded.toLocaleString('nl-NL') + ' gemarkeerd';
+  $('maskSuggest').disabled = !included && !(excluded && mask);
+  $('maskApply').disabled = !proposedMask;
+  $('seedClear').disabled = !marks?.size;
+}
+function markMask(dabs, sign) {
+  const marks = model.maskMarks;
+  const faces = editableFaces(dabs, face => marks.get(face) !== sign);
+  if (!faces.size) return;
+  const previous = new Map();
+  for (const face of faces) { previous.set(face, marks.get(face)); marks.set(face, sign); }
+  record(
+    () => { for (const [face, old] of previous) old ? marks.set(face, old) : marks.delete(face); },
+    () => { for (const face of faces) marks.set(face, sign); }
+  );
+  smartUI();
+  draw();
+}
+$('seedClear').onclick = () => {
+  if (stroke || !model.maskMarks.size) return;
+  const marks = model.maskMarks;
+  const previous = new Map(marks);
+  proposedMask = null;
+  marks.clear();
+  record(() => { for (const [face, sign] of previous) marks.set(face, sign); }, () => marks.clear());
+  smartUI();
+  draw();
+};
+function pushCost(queue, item) {
+  let index = queue.length;
+  while (index > 0) {
+    const parent = (index - 1) >> 1;
+    if (queue[parent].cost <= item.cost) break;
+    queue[index] = queue[parent];
+    index = parent;
+  }
+  queue[index] = item;
+}
+function popCost(queue) {
+  const root = queue[0], last = queue.pop();
+  if (!queue.length) return root;
+  let index = 0;
+  while (index * 2 + 1 < queue.length) {
+    let child = index * 2 + 1;
+    if (child + 1 < queue.length && queue[child + 1].cost < queue[child].cost) child++;
+    if (last.cost <= queue[child].cost) break;
+    queue[index] = queue[child];
+    index = child;
+  }
+  queue[index] = last;
+  return root;
+}
+function meshCenter(face) {
+  const { faces, vertices } = model, i = face * 3;
+  const a = faces[i] * 3, b = faces[i + 1] * 3, c = faces[i + 2] * 3;
+  return [(vertices[a] + vertices[b] + vertices[c]) / 3,
+    (vertices[a + 1] + vertices[b + 1] + vertices[c + 1]) / 3,
+    (vertices[a + 2] + vertices[b + 2] + vertices[c + 2]) / 3];
+}
+function suggestMask(reach) {
+  const result = mask ? mask.slice() : new Uint8Array(colors.length);
+  const distances = new Float64Array(colors.length), signs = new Int8Array(colors.length), queue = [];
+  distances.fill(Infinity);
+  for (const [face, sign] of model.maskMarks) {
+    distances[face] = 0;
+    signs[face] = sign;
+    pushCost(queue, { face, cost: 0, sign });
+  }
+  const links = getEdgeLinks();
+  while (queue.length) {
+    const { face, cost, sign } = popCost(queue);
+    if (cost !== distances[face] || sign !== signs[face]) continue;
+    result[face] = sign > 0 ? 1 : 0;
+    const first = face * 3, center = meshCenter(face);
+    for (let corner = first; corner < first + 3; corner++) {
+      for (let edge = links[corner]; edge !== corner; edge = links[edge]) {
+        const next = Math.floor(edge / 3);
+        if (distances[next] <= cost) continue;
+        const other = meshCenter(next);
+        const distance = Math.max(1e-8, Math.hypot(center[0] - other[0], center[1] - other[1], center[2] - other[2]));
+        // Surface distance is measured in units of the model's longest side.
+        // Sharp connections are more expensive than following a smooth patch.
+        const newCost = cost + distance * (1 + 12 * Math.max(0, 1 - normalDot(face, next)));
+        if (newCost > reach || newCost > distances[next] ||
+            (newCost === distances[next] && sign >= signs[next])) continue;
+        signs[next] = sign;
+        distances[next] = newCost;
+        pushCost(queue, { face: next, cost: newCost, sign });
+      }
+    }
+  }
+  return result;
+}
+$('maskSuggest').onclick = () => {
+  if (stroke || $('maskSuggest').disabled) return;
+  proposedMask = suggestMask(Number($('smartReach').value) / 100);
+  smartUI();
+  draw();
+  status('Voorstel in mintgroen. Klik op Toepassen of voeg meer markeringen toe.');
+};
+$('maskApply').onclick = () => {
+  if (stroke || !proposedMask) return;
+  changeMask(proposedMask);
+  status($('maskCount').textContent + '. Het voorstel is toegepast.');
+};
+function contourValue(face, selection, mode, links) {
+  const first = face * 3, own = selection[face];
+  let inside = 0, outside = 0;
+  for (let corner = first; corner < first + 3; corner++) {
+    for (let edge = links[corner]; edge !== corner; edge = links[edge]) {
+      const neighbor = Math.floor(edge / 3);
+      if (neighbor === face) continue;
+      // With snapping, neighbors on the other side of a crease have less say.
+      const weight = mode === 'snap' ? 1 / (1 + 16 * Math.max(0, 1 - normalDot(face, neighbor))) : 1;
+      if (selection[neighbor]) inside += weight;
+      else outside += weight;
+    }
+  }
+  if (mode === 'expand') return inside ? 1 : own;
+  if (mode === 'shrink') return outside ? 0 : own;
+  if (mode === 'snap' && inside && outside && Math.abs(inside - outside) <= .15) return own;
+  if (inside === outside) return own;
+  return inside > outside ? 1 : 0;
+}
+function editContour(dabs) {
+  if (!mask) return;
+  const candidates = [...editableFaces(dabs, () => true)];
+  if (!candidates.length) return;
+  const mode = $('contourMode').value, steps = Number($('contourSteps').value);
+  const links = getEdgeLinks(), next = mask.slice();
+  const values = new Uint8Array(candidates.length);
+  for (let step = 0; step < steps; step++) {
+    for (let i = 0; i < candidates.length; i++) values[i] = contourValue(candidates[i], next, mode, links);
+    let changed = false;
+    for (let i = 0; i < candidates.length; i++) {
+      if (next[candidates[i]] !== values[i]) changed = true;
+      next[candidates[i]] = values[i];
+    }
+    if (!changed) break;
+  }
+  if (!candidates.some(face => next[face] !== mask[face])) {
+    status('Geen contour gewijzigd. Trek de streek over de grens van het masker.');
+    return;
+  }
+  changeMask(next);
+  status('Contour bijgewerkt. ' + $('maskCount').textContent + '.');
+}
 function finishSelectionBrush(dabs, operation) {
   const seeds = new Set();
   for (const [x, y] of dabs) {
@@ -704,7 +886,7 @@ canvas.oncontextmenu = event => event.preventDefault();
 canvas.onpointerdown = event => {
   if (stroke || event.button > 2) return;
   const mode = event.button === 0 ? tool : 'orbit', layer = model.layers[active];
-  if (mode !== 'orbit' && mode !== 'pick' && mode !== 'wand' && mode !== 'selectBrush' && !layer.visible) { status('Maak de actieve laag zichtbaar om te schilderen.'); return; }
+  if (mode !== 'orbit' && mode !== 'pick' && mode !== 'wand' && !isMaskStroke(mode) && !layer.visible) { status('Maak de actieve laag zichtbaar om te schilderen.'); return; }
   const [x, y] = pointerCoords(event);
   hover = [x, y];
   if (mode === 'wand') {
@@ -712,8 +894,11 @@ canvas.onpointerdown = event => {
     if (face >= 0) wand(face, event);
     return;
   }
-  if (mode === 'selectBrush') {
-    stroke = { id: event.pointerId, mode, x, y, dabs: [[x, y]], operation: selectionMode(event) };
+  if (isMaskStroke(mode)) {
+    if (mode === 'contour' && !mask) { status('Maak eerst een masker om de contour te bewerken.'); return; }
+    if (mode === 'smartMask' && proposedMask) { proposedMask = null; smartUI(); draw(); }
+    const operation = mode === 'smartMask' ? (event.altKey ? -1 : event.shiftKey ? 1 : Number($('seedMode').value)) : selectionMode(event);
+    stroke = { id: event.pointerId, mode, x, y, dabs: [[x, y]], operation };
     canvas.setPointerCapture(event.pointerId);
     return;
   }
@@ -729,7 +914,7 @@ canvas.onpointermove = event => {
   hover = [x, y];
   if (stroke?.id !== event.pointerId || !stroke) { drawGuide(); return; }
   const dx = x - stroke.x, dy = y - stroke.y;
-  if (stroke.mode === 'selectBrush') {
+  if (isMaskStroke(stroke.mode)) {
     const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / brushSpacing()));
     for (let i = 1; i <= steps; i++) stroke.dabs.push([stroke.x + dx * i / steps, stroke.y + dy * i / steps]);
     drawGuide();
@@ -746,8 +931,11 @@ function finishStroke(event) {
   if (!stroke || stroke.id !== event.pointerId) return;
   const { mode, changes, layer, value, dabs, operation } = stroke;
   stroke = null;
-  if (mode === 'selectBrush') {
-    if (event.type === 'pointerup') finishSelectionBrush(dabs, operation);
+  if (isMaskStroke(mode)) {
+    if (event.type !== 'pointerup') return;
+    if (mode === 'smartMask') markMask(dabs, operation);
+    else if (mode === 'contour') editContour(dabs);
+    else finishSelectionBrush(dabs, operation);
     return;
   }
   if (!changes.size) {
@@ -766,7 +954,7 @@ canvas.onpointerup = canvas.onpointercancel = canvas.onlostpointercapture = fini
 canvas.onpointerleave = () => { hover = null; drawGuide(); };
 canvas.addEventListener('wheel', event => {
   event.preventDefault();
-  if (stroke?.mode === 'selectBrush') return;
+  if (isMaskStroke(stroke?.mode)) return;
   anchors = [];
   zoom = Math.max(.2, Math.min(12, zoom * Math.exp(-event.deltaY * .001)));
   viewChanged = true; draw();
@@ -775,7 +963,12 @@ $('camera').onclick = resetCamera;
 document.addEventListener('keydown', event => {
   if (event.target.matches('input,select,textarea') || stroke) return;
   const key = event.key.toLowerCase();
-  if (key === 'escape') { anchors = []; drawGuide(); return; }
+  if (key === 'escape') {
+    anchors = [];
+    if (proposedMask) { proposedMask = null; smartUI(); draw(); }
+    else drawGuide();
+    return;
+  }
   if (event.ctrlKey || event.metaKey) {
     if (key === 'z' || key === 'y' || key === 's') {
       event.preventDefault();
@@ -783,7 +976,7 @@ document.addEventListener('keydown', event => {
     }
     return;
   }
-  const next = { b: 'brush', g: 'fill', e: 'erase', i: 'pick', v: 'orbit', l: 'line', c: 'curve', w: 'wand', m: 'selectBrush' }[key];
+  const next = { b: 'brush', g: 'fill', e: 'erase', i: 'pick', v: 'orbit', l: 'line', c: 'curve', w: 'wand', m: 'selectBrush', s: 'smartMask', t: 'contour' }[key];
   if (next) selectTool(next);
 });
 async function readBinarySTL(data, count, progress) {
