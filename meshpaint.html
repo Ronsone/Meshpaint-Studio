@@ -9,7 +9,7 @@
 <header><strong>Meshpaint <span>Studio</span></strong><button id="open">STL / project openen</button><button id="save">Project opslaan</button><button id="export" class="primary">3MF exporteren</button><input id="file" type="file" accept=".stl,.meshpaint" hidden></header>
 <main>
 <nav aria-label="Gereedschap">
-<button data-tool="brush" title="Penseel (B)">Penseel</button><button data-tool="line" title="Lijn (L)">Lijn</button><button data-tool="curve" title="Curve (C)">Curve</button><button data-tool="selectBrush" title="Selectiepenseel (M). Shift voegt toe, Alt trekt af.">Selectiepenseel</button><button data-tool="smartMask" title="Slim masker (S)">Slim masker +/−</button><button data-tool="contour" title="Contour bijwerken (T)">Contour bijwerken</button><button data-tool="wand" title="Toverstaf (W). Shift voegt toe, Alt trekt af.">Toverstaf</button><button data-tool="fill" title="Vullen (G)">Vullen</button><button data-tool="erase" title="Gum (E)">Gum</button><button data-tool="pick" title="Pipet (I)">Pipet</button><button data-tool="orbit" title="Draaien (V)">Draaien</button><hr><button id="undo">Ongedaan</button><button id="redo">Opnieuw</button>
+<button data-tool="brush" title="Penseel (B)">Penseel</button><button data-tool="line" title="Lijn (L)">Lijn</button><button data-tool="curve" title="Curve (C)">Curve</button><button data-tool="selectBrush" title="Selectiepenseel (M). Shift voegt toe, Alt trekt af.">Selectiepenseel</button><button data-tool="smartMask" title="Slim masker (S)">Slim masker</button><button data-tool="contour" title="Contour bijwerken (T)">Contour bijwerken</button><button data-tool="wand" title="Toverstaf (W). Shift voegt toe, Alt trekt af.">Toverstaf</button><button data-tool="fill" title="Vullen (G)">Vullen</button><button data-tool="erase" title="Gum (E)">Gum</button><button data-tool="pick" title="Pipet (I)">Pipet</button><button data-tool="orbit" title="Draaien (V)">Draaien</button><hr><button id="undo">Ongedaan</button><button id="redo">Opnieuw</button>
 </nav>
 <section id="view"><canvas id="mesh" aria-label="Schilderbaar 3D-model"></canvas><canvas id="guide" aria-hidden="true"></canvas><div class="overlay"><strong id="name"></strong><br><small id="count"></small></div><button class="camera" id="camera" title="Rechts slepen om te draaien, scrollen om te zoomen">Weergave herstellen</button></section>
 <aside>
@@ -22,9 +22,12 @@
 <label><input type="checkbox" id="maskInspect"> Masker markeren</label>
 <div id="selectionSettings" hidden><label for="selectionGrowth">Uitbreiding <output id="selectionGrowthValue">18</output> px</label><input id="selectionGrowth" type="range" min="0" max="100" value="18">
 <label for="selectionEdge">Randhoek <output id="selectionEdgeValue">24</output>°</label><input id="selectionEdge" type="range" min="1" max="90" value="24"></div>
-<div id="smartSettings" hidden><label for="seedMode">Markering</label><select id="seedMode"><option value="1">+ Meenemen</option><option value="-1">− Uitsluiten</option></select>
+<div id="smartSettings" hidden><label for="smartMode">Werkwijze</label><select id="smartMode"><option value="trace">Rand tekenen</option><option value="guides">Markeringen +/−</option></select>
+<div id="traceControls"><small>Teken met het kruispunt. Klik daarna op de kant die je wilt behouden.</small><div class="row controls"><button id="traceReset">Opnieuw tekenen</button></div></div>
+<div id="seedControls" hidden><label for="seedMode">Markering</label><select id="seedMode"><option value="1">+ Meenemen</option><option value="-1">− Uitsluiten</option></select>
 <label for="smartReach">Bereik <output id="smartReachValue">6</output>% van model</label><input id="smartReach" type="range" min="1" max="25" value="6">
-<div class="row controls"><button id="maskSuggest">Voorstel tonen</button><button id="maskApply">Toepassen</button></div><button id="seedClear">Markeringen wissen</button><br><small id="seedCount"></small></div>
+<div class="row controls"><button id="maskSuggest">Voorstel tonen</button><button id="seedClear">Markeringen wissen</button></div><small id="seedCount"></small></div>
+<div class="row controls"><button id="maskApply">Toepassen</button></div></div>
 <div id="contourSettings" hidden><label for="contourMode">Contourbewerking</label><select id="contourMode"><option value="expand">Uitbreiden</option><option value="shrink">Inkrimpen</option><option value="smooth">Glad maken</option><option value="snap">Naar scherpe rand</option></select>
 <label for="contourSteps">Sterkte <output id="contourStepsValue">2</output> stappen</label><input id="contourSteps" type="range" min="1" max="10" value="2"></div><hr>
 <button id="refine" title="Verdeel elke driehoek in vier">Mesh verfijnen ×4</button><hr>
@@ -48,7 +51,7 @@ const hex = color => '#' + color.toString(16).padStart(6, '0').toUpperCase();
 const newLayer = name => ({ name, visible: true, paint: new Map() });
 
 let model, active = 0, palette = [], tool = 'brush', stroke;
-let mask = null, proposedMask = null, lockedColors = new Set(), anchors = [], hover = null;
+let mask = null, proposedMask = null, tracedBoundary = null, lockedColors = new Set(), anchors = [], hover = null;
 let undo = [], redo = [];
 let yaw = .42, pitch = .14, zoom = 1;
 let screen, depths, hits, projected, light, colors;
@@ -88,7 +91,7 @@ function makeModel(name, points, faces, layers) {
   return { name, points, faces, vertices, normals, layers, edgeLinks: null, maskMarks: new Map() };
 }
 function setModel(next, layerIndex = next.layers.length - 1) {
-  model = next; active = layerIndex; proposedMask = null;
+  model = next; active = layerIndex; proposedMask = null; tracedBoundary = null;
   colors = new Uint32Array(model.faces.length / 3);
   light = new Float32Array(colors.length);
   projected = new Float32Array(model.vertices.length);
@@ -117,6 +120,7 @@ function compose() {
 }
 function resize() {
   if (isMaskStroke(stroke?.mode)) stroke = null;
+  discardTrace();
   const { width, height } = canvas.getBoundingClientRect();
   const scale = Math.min(1, 1000 / Math.max(1, width, height));
   canvas.width = Math.max(1, Math.round(width * scale));
@@ -174,7 +178,7 @@ function draw() {
   if (viewChanged) rasterize();
   const pixels = screen.data, viewMask = proposedMask ?? mask;
   const marked = Boolean(proposedMask) || $('maskInspect').checked;
-  const marks = tool === 'smartMask' && !proposedMask ? model.maskMarks : null;
+  const marks = tool === 'smartMask' && !usesTrace() && !proposedMask ? model.maskMarks : null;
   for (let i = 0; i < hits.length; i++) {
     const face = hits[i] - 1, p = i * 4;
     if (face < 0) { pixels[p + 3] = 0; continue; }
@@ -191,6 +195,7 @@ function draw() {
 }
 function resetCamera() {
   if (isMaskStroke(stroke?.mode)) stroke = null;
+  discardTrace();
   yaw = .42; pitch = .14; zoom = 1;
   anchors = [];
   viewChanged = true;
@@ -208,7 +213,7 @@ function record(before, after) {
 }
 function replay(from, to, key) {
   if (stroke || !from.length) return;
-  proposedMask = null;
+  proposedMask = null; tracedBoundary = null;
   const action = from.pop();
   action[key]();
   to.push(action);
@@ -365,14 +370,14 @@ function selectTool(next) {
   $('selectionSettings').hidden = next !== 'selectBrush';
   $('smartSettings').hidden = next !== 'smartMask';
   $('contourSettings').hidden = next !== 'contour';
-  proposedMask = null;
+  proposedMask = null; tracedBoundary = null;
   if (model) { smartUI(); draw(); }
   anchors = [];
   drawGuide();
-  if (tool === 'smartMask') status('Markeer met Shift wat erbij hoort en met Alt wat buiten het masker blijft. Kies daarna Voorstel tonen.');
+  if (tool === 'smartMask') smartInstructions();
   if (tool === 'contour') status('Kies een bewerking en trek een streek over de rand van een actief masker.');
   if (tool === 'selectBrush') status('Trek een streek over het gewenste oppervlak. Shift voegt toe, Alt trekt af.');
-  canvas.style.cursor = tool === 'orbit' ? 'grab' : 'crosshair';
+  canvas.style.cursor = tool === 'orbit' ? 'grab' : tool === 'smartMask' && usesTrace() ? 'none' : 'crosshair';
   for (const button of tools) button.classList.toggle('active', button.dataset.tool === next);
 }
 for (const button of tools) button.onclick = () => selectTool(button.dataset.tool);
@@ -428,7 +433,7 @@ function maskUI() {
   $('maskCount').textContent = mask ? count.toLocaleString('nl-NL') + ' driehoeken geselecteerd' : 'Geen actief masker';
 }
 function changeMask(next) {
-  proposedMask = null;
+  proposedMask = null; tracedBoundary = null;
   const previous = mask;
   function apply(value) { mask = value; maskUI(); smartUI(); }
   apply(next);
@@ -444,12 +449,15 @@ $('maskInspect').onchange = draw;
 function selectionMode(event) {
   return event.altKey ? 'subtract' : event.shiftKey ? 'add' : $('maskMode').value;
 }
-function commitSelection(selection, mode) {
+function selectionMask(selection, mode) {
   const next = mode !== 'replace' && mask ? mask.slice() : new Uint8Array(colors.length);
   if (mode === 'subtract' && !mask) next.fill(1);
   const value = mode === 'subtract' ? 0 : 1;
   for (const id of selection) next[id] = value;
-  changeMask(next);
+  return next;
+}
+function commitSelection(selection, mode) {
+  changeMask(selectionMask(selection, mode));
   status($('maskCount').textContent + '. Je schildert alleen binnen het masker.');
 }
 function wand(face, event) {
@@ -483,10 +491,11 @@ function faceAt(x, y) {
   return hits[py * canvas.width + px] - 1;
 }
 function isMaskStroke(mode) {
-  return mode === 'selectBrush' || mode === 'smartMask' || mode === 'contour';
+  return mode === 'selectBrush' || mode === 'smartMask' || mode === 'contour' || mode === 'trace';
 }
 function drawGuide() {
   guideContext.clearRect(0, 0, guide.width, guide.height);
+  if (tool === 'smartMask' && usesTrace()) { drawTraceGuide(); return; }
   if (!hover || (stroke && stroke.mode === 'orbit')) return;
   const [px, py] = pixelCoords(...hover);
   const context = guideContext;
@@ -674,6 +683,147 @@ function brushFaces(px, py, brush, accepts) {
   includeBrushCentroids(selection, x + .5, y + .5, brush, accepts);
   return selection;
 }
+function usesTrace() {
+  return $('smartMode').value === 'trace';
+}
+function smartInstructions() {
+  status(usesTrace()
+    ? 'Trek de gewenste rand met het kruispunt en klik op de kant die je wilt behouden.'
+    : 'Markeer met Shift wat erbij hoort en met Alt wat buiten het masker blijft. Kies daarna Voorstel tonen.');
+}
+function discardTrace() {
+  if (!tracedBoundary) return false;
+  tracedBoundary = null;
+  proposedMask = null;
+  smartUI();
+  return true;
+}
+$('smartMode').onchange = () => {
+  if (stroke?.mode === 'trace') stroke = null;
+  $('traceControls').hidden = !usesTrace();
+  $('seedControls').hidden = usesTrace();
+  selectTool('smartMask');
+};
+$('traceReset').onclick = () => {
+  if (discardTrace()) { smartInstructions(); draw(); }
+};
+function drawTraceGuide() {
+  const context = guideContext;
+  context.save();
+  context.lineJoin = 'round';
+  context.lineCap = 'round';
+  function line(points, dashed = false) {
+    if (points.length < 2) return;
+    context.setLineDash(dashed ? [5, 4] : []);
+    context.beginPath();
+    context.moveTo(...points[0]);
+    for (let i = 1; i < points.length; i++) context.lineTo(...points[i]);
+    context.lineWidth = 1.5;
+    context.strokeStyle = '#58efcf';
+    context.stroke();
+  }
+  if (tracedBoundary) {
+    const { points, extensions } = tracedBoundary;
+    line(points);
+    for (const extension of extensions) line(extension, true);
+  } else if (stroke?.mode === 'trace') line(stroke.dabs.map(dab => pixelCoords(...dab)));
+  context.setLineDash([]);
+  if (hover && stroke?.mode !== 'orbit') {
+    const [x, y] = pixelCoords(...hover);
+    context.beginPath();
+    context.moveTo(x - 10, y); context.lineTo(x + 10, y);
+    context.moveTo(x, y - 10); context.lineTo(x, y + 10);
+    context.strokeStyle = '#11131d'; context.lineWidth = 3; context.stroke();
+    context.strokeStyle = '#ffffff'; context.lineWidth = 1; context.stroke();
+  }
+  context.restore();
+}
+function traceExit(point, dx, dy) {
+  const [x, y] = point;
+  const tx = dx > 0 ? (canvas.width - 1 - x) / dx : dx < 0 ? -x / dx : Infinity;
+  const ty = dy > 0 ? (canvas.height - 1 - y) / dy : dy < 0 ? -y / dy : Infinity;
+  const distance = Math.min(tx, ty);
+  return [x + distance * dx, y + distance * dy];
+}
+function finishTrace(dabs, end) {
+  const { width, height } = canvas;
+  const points = [...dabs, end].map(dab => {
+    const [x, y] = pixelCoords(...dab);
+    return [Math.max(0, Math.min(width - 1, x)), Math.max(0, Math.min(height - 1, y))];
+  });
+  let length = 0;
+  for (let i = 1; i < points.length; i++) {
+    length += Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]);
+  }
+  if (length < 12) { status('Sleep de crosshair langs de rand om een lijn te tekenen.'); drawGuide(); return; }
+  const first = points[0], last = points.at(-1);
+  const dx = last[0] - first[0], dy = last[1] - first[1];
+  const extensions = Math.hypot(dx, dy) < 9
+    ? [[last, first]]
+    : [[traceExit(first, -dx, -dy), first], [last, traceExit(last, dx, dy)]];
+  tracedBoundary = { points, extensions };
+  smartUI();
+  drawGuide();
+  status('Klik op het zichtbare oppervlak aan de kant die je wilt behouden.');
+}
+function traceSide(start, width, height, boundary) {
+  const area = new Uint8Array(width * height);
+  function wall(path) {
+    for (let i = 1; i < path.length; i++) {
+      const [x, y] = path[i - 1], dx = path[i][0] - x, dy = path[i][1] - y;
+      const steps = Math.max(1, Math.ceil(Math.max(Math.abs(dx), Math.abs(dy))));
+      for (let step = 0; step <= steps; step++) {
+        const col = Math.max(0, Math.min(width - 1, Math.round(x + dx * step / steps)));
+        const row = Math.max(0, Math.min(height - 1, Math.round(y + dy * step / steps)));
+        area[row * width + col] = 1;
+      }
+    }
+  }
+  wall(boundary.points);
+  for (const extension of boundary.extensions) wall(extension);
+  if (area[start]) return null;
+  const queue = new Uint32Array(area.length);
+  let tail = 0;
+  function enqueue(pixel) {
+    if (area[pixel]) return;
+    area[pixel] = 2;
+    queue[tail++] = pixel;
+  }
+  enqueue(start);
+  for (let head = 0; head < tail; head++) {
+    const pixel = queue[head], col = pixel % width;
+    if (col > 0) enqueue(pixel - 1);
+    if (col + 1 < width) enqueue(pixel + 1);
+    if (pixel >= width) enqueue(pixel - width);
+    if (pixel + width < area.length) enqueue(pixel + width);
+  }
+  return area.includes(0) ? area : null;
+}
+function previewTraceSide(x, y, mode) {
+  const seed = faceAt(x, y);
+  if (seed < 0) { status('Klik op het model aan één kant van de getekende lijn.'); return; }
+  const { width, height } = canvas;
+  const [px, py] = pixelCoords(x, y).map(Math.floor);
+  const area = traceSide(py * width + px, width, height, tracedBoundary);
+  if (!area) { status('Kies een punt verder van de lijn, of teken de rand opnieuw.'); return; }
+  const grid = brushTiles ??= indexBrushTriangles();
+  function onChosenSide(face) {
+    const [cx, cy, depth] = faceCentroid(face);
+    if (cx < 0 || cy < 0 || cx >= width || cy >= height) return false;
+    const pixel = Math.floor(cy) * width + Math.floor(cx);
+    if (area[pixel] !== 2) return false;
+    return hits[pixel] === face + 1 || centerVisible(face, cx, cy, depth, grid);
+  }
+  if (!onChosenSide(seed)) {
+    status('Dit vlak ligt op de grens. Klik iets verder van de getekende lijn.');
+    return;
+  }
+  const selected = growFaces([seed], (_, face) => onChosenSide(face));
+  proposedMask = selectionMask(selected, mode);
+  smartUI();
+  draw();
+  status('Voorstel in mintgroen. Klik op Toepassen of klik aan de andere kant.');
+}
 function editableFaces(dabs, accepts) {
   const brush = brushGeometry(), faces = new Set();
   for (const dab of dabs) {
@@ -690,6 +840,7 @@ function smartUI() {
   $('maskSuggest').disabled = !included && !(excluded && mask);
   $('maskApply').disabled = !proposedMask;
   $('seedClear').disabled = !marks?.size;
+  $('traceReset').disabled = !tracedBoundary;
 }
 function markMask(dabs, sign) {
   const marks = model.maskMarks;
@@ -889,6 +1040,14 @@ canvas.onpointerdown = event => {
   if (mode !== 'orbit' && mode !== 'pick' && mode !== 'wand' && !isMaskStroke(mode) && !layer.visible) { status('Maak de actieve laag zichtbaar om te schilderen.'); return; }
   const [x, y] = pointerCoords(event);
   hover = [x, y];
+  if (mode === 'orbit' && discardTrace()) { smartInstructions(); draw(); }
+  if (mode === 'smartMask' && usesTrace()) {
+    if (tracedBoundary) { previewTraceSide(x, y, selectionMode(event)); return; }
+    stroke = { id: event.pointerId, mode: 'trace', x, y, dabs: [[x, y]] };
+    canvas.setPointerCapture(event.pointerId);
+    drawGuide();
+    return;
+  }
   if (mode === 'wand') {
     const face = faceAt(x, y);
     if (face >= 0) wand(face, event);
@@ -914,7 +1073,10 @@ canvas.onpointermove = event => {
   hover = [x, y];
   if (stroke?.id !== event.pointerId || !stroke) { drawGuide(); return; }
   const dx = x - stroke.x, dy = y - stroke.y;
-  if (isMaskStroke(stroke.mode)) {
+  if (stroke.mode === 'trace') {
+    if (dx || dy) stroke.dabs.push([x, y]);
+    drawGuide();
+  } else if (isMaskStroke(stroke.mode)) {
     const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / brushSpacing()));
     for (let i = 1; i <= steps; i++) stroke.dabs.push([stroke.x + dx * i / steps, stroke.y + dy * i / steps]);
     drawGuide();
@@ -931,6 +1093,11 @@ function finishStroke(event) {
   if (!stroke || stroke.id !== event.pointerId) return;
   const { mode, changes, layer, value, dabs, operation } = stroke;
   stroke = null;
+  if (mode === 'trace') {
+    if (event.type === 'pointerup') finishTrace(dabs, pointerCoords(event));
+    else drawGuide();
+    return;
+  }
   if (isMaskStroke(mode)) {
     if (event.type !== 'pointerup') return;
     if (mode === 'smartMask') markMask(dabs, operation);
@@ -955,6 +1122,7 @@ canvas.onpointerleave = () => { hover = null; drawGuide(); };
 canvas.addEventListener('wheel', event => {
   event.preventDefault();
   if (isMaskStroke(stroke?.mode)) return;
+  discardTrace();
   anchors = [];
   zoom = Math.max(.2, Math.min(12, zoom * Math.exp(-event.deltaY * .001)));
   viewChanged = true; draw();
@@ -965,6 +1133,7 @@ document.addEventListener('keydown', event => {
   const key = event.key.toLowerCase();
   if (key === 'escape') {
     anchors = [];
+    if (discardTrace()) { draw(); return; }
     if (proposedMask) { proposedMask = null; smartUI(); draw(); }
     else drawGuide();
     return;
