@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="nl">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meshpaint Studio</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#15161d;color:#eef0fa;font:14px system-ui,sans-serif}button,select,input{font:inherit}button,select{background:#2a2c39;color:inherit;border:1px solid #414354;border-radius:8px;padding:8px;cursor:pointer}button:hover,button.active{border-color:#bb9aff;background:#40345a}button:disabled{opacity:.45}.primary{background:#b89aff;color:#1c1330;font-weight:bold}header{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px;border-bottom:1px solid #363849}header strong{font-size:20px;margin-right:auto}header strong span,a{color:#c4a7ff}main{display:grid;grid-template-columns:95px minmax(0,1fr) 245px;height:calc(100dvh - 111px);min-height:320px}nav,aside{padding:12px;background:#1e202a;overflow:auto}nav button{width:100%;margin-bottom:5px}section{position:relative;min-width:0;background:radial-gradient(ellipse at 50% 45%,#3b4053,#171922 75%)}canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}.overlay{position:absolute;top:12px;left:12px;background:#21232ee0;padding:8px 12px;border-radius:8px;pointer-events:none}.camera{position:absolute;bottom:12px;right:12px}h2{font-size:14px;margin:0 0 10px}hr{border:0;border-top:1px solid #383a48;margin:16px 0}label{display:block;margin:8px 0;color:#ccd0e1}input[type=range],select{width:100%;accent-color:#c4a7ff}.row{display:flex;align-items:center;gap:6px;margin:6px 0}.row .layer{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.swatches{display:flex;flex-wrap:wrap;gap:5px}.swatches button{width:24px;height:24px;padding:0}.swatches button.active{outline:2px solid white}small,footer{color:#c2c6d9}footer{padding:8px 12px}#saved a{display:inline-block;margin:0 0 8px}#saved a[hidden]{display:none}@media(max-width:680px){main{grid-template-columns:66px minmax(0,1fr) 142px}nav,aside{padding:6px}nav button{font-size:10px}header strong{font-size:16px}header button{font-size:11px}}
+</style>
+<header><strong>Meshpaint <span>Studio</span></strong><button id="open">STL / project openen</button><button id="save">Project opslaan</button><button id="export" class="primary">3MF exporteren</button><input id="file" type="file" accept=".stl,.meshpaint" hidden></header>
+<main>
+<nav aria-label="Gereedschap">
+<button data-tool="brush" title="Penseel (B)">Penseel</button><button data-tool="fill" title="Vullen (G)">Vullen</button><button data-tool="erase" title="Gum (E)">Gum</button><button data-tool="pick" title="Pipet (I)">Pipet</button><button data-tool="orbit" title="Draaien (V)">Draaien</button><hr><button id="undo">Ongedaan</button><button id="redo">Opnieuw</button>
+</nav>
+<section id="view"><canvas aria-label="Schilderbaar 3D-model"></canvas><div class="overlay"><strong id="name"></strong><br><small id="count"></small></div><button class="camera" id="camera" title="Rechts slepen om te draaien, scrollen om te zoomen">Weergave herstellen</button></section>
+<aside>
+<h2>Kleur</h2><div class="row"><input id="color" type="color" value="#b095ff" aria-label="Verfkleur"><strong id="hex"></strong></div><div class="swatches" id="swatches"></div>
+<label for="mix">Mengkleuren</label><div class="row"><button id="paletteOpen">Palet importeren</button><button id="example" title="CSV-voorbeeld downloaden">CSV</button></div><input id="paletteFile" type="file" accept=".csv,.json" hidden><select id="mix" hidden></select><small id="recipe"></small>
+<hr><label for="size">Penseelgrootte <output id="sizeValue">24</output> px</label><input id="size" type="range" min="2" max="100" value="24">
+<label for="angle">Vulhoek <output id="angleValue">25</output>°</label><input id="angle" type="range" min="0" max="90" value="25">
+<button id="refine" title="Verdeel elke driehoek in vier">Mesh verfijnen ×4</button><hr>
+<div class="row"><h2 style="margin:0 auto 0 0">Lagen</h2><button id="layerAdd" aria-label="Laag toevoegen">+</button></div><div id="layers"></div>
+<div id="saved" hidden><hr><h2>Opgeslagen project</h2><a id="download" hidden>Download .meshpaint</a><button id="restore" hidden>Herstelkopie openen</button></div>
+</aside></main>
+<footer id="status" role="status">Open dit HTML-bestand rechtstreeks in je browser om de editor te gebruiken.</footer>
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const canvas = document.querySelector('canvas');
+const ctx = canvas.getContext('2d');
+const status = text => { $('status').textContent = text; };
+const limit = 600000;
+const base = 0xc6cad7;
+const hex = color => '#' + color.toString(16).padStart(6, '0').toUpperCase();
+const newLayer = name => ({ name, visible: true, paint: new Map() });
+
+let model, active = 0, palette = [], tool = 'brush', stroke;
+let undo = [], redo = [];
+let yaw = .42, pitch = .14, zoom = 1;
+let screen, depths, hits, projected, light, colors;
+let viewChanged = true;
+function bounds(points) {
+  const low = [Infinity, Infinity, Infinity], high = [-Infinity, -Infinity, -Infinity];
+  for (let i = 0; i < points.length; i++) {
+    const axis = i % 3;
+    low[axis] = Math.min(low[axis], points[i]);
+    high[axis] = Math.max(high[axis], points[i]);
+  }
+  const span = Math.max(...high.map((v, i) => v - low[i]));
+  if (!span || !Number.isFinite(span)) throw new Error('Het model heeft ongeldige afmetingen.');
+  return { span, center: low.map((v, i) => v + (high[i] - v) / 2) };
+}
+function makeModel(name, points, faces, layers) {
+  if (typeof name !== 'string' || !Array.isArray(points) || !points.length || points.length % 3 ||
+      !points.every(Number.isFinite) || !Array.isArray(faces) || !faces.length || faces.length % 3 ||
+      faces.length > limit * 3 || !faces.every(v => Number.isInteger(v) && v >= 0 && v < points.length / 3)) {
+    throw new Error('Ongeldige mesh of meer dan 600.000 driehoeken.');
+  }
+  const { span, center } = bounds(points);
+  const vertices = new Float32Array(points.length), normals = new Float32Array(faces.length);
+  for (let i = 0; i < points.length; i += 3) {
+    vertices[i] = (points[i] - center[0]) / span;
+    vertices[i + 1] = (points[i + 2] - center[2]) / span;
+    vertices[i + 2] = (center[1] - points[i + 1]) / span;
+  }
+  for (let i = 0; i < faces.length; i += 3) {
+    const a = faces[i] * 3, b = faces[i + 1] * 3, c = faces[i + 2] * 3;
+    const x = vertices[b] - vertices[a], y = vertices[b + 1] - vertices[a + 1], z = vertices[b + 2] - vertices[a + 2];
+    const u = vertices[c] - vertices[a], v = vertices[c + 1] - vertices[a + 1], w = vertices[c + 2] - vertices[a + 2];
+    const nx = y * w - z * v, ny = z * u - x * w, nz = x * v - y * u;
+    const length = Math.hypot(nx, ny, nz) || 1;
+    normals[i] = nx / length; normals[i + 1] = ny / length; normals[i + 2] = nz / length;
+  }
+  return { name, points, faces, vertices, normals, layers, neighbors: null };
+}
+function setModel(next, layerIndex = next.layers.length - 1) {
+  model = next; active = layerIndex;
+  colors = new Uint32Array(model.faces.length / 3);
+  light = new Float32Array(colors.length);
+  projected = new Float32Array(model.vertices.length);
+  $('name').textContent = model.name;
+  $('count').textContent = colors.length.toLocaleString('nl-NL') + ' driehoeken';
+  $('refine').disabled = colors.length > limit / 4;
+  viewChanged = true;
+  compose();
+  layersUI();
+  draw();
+}
+function composeFace(face) {
+  colors[face] = base;
+  for (let i = model.layers.length - 1; i >= 0; i--) {
+    const layer = model.layers[i];
+    if (layer.visible && layer.paint.has(face)) {
+      colors[face] = layer.paint.get(face);
+      break;
+    }
+  }
+}
+function compose() {
+  for (let face = 0; face < colors.length; face++) composeFace(face);
+}
+function resize() {
+  const { width, height } = canvas.getBoundingClientRect();
+  const scale = Math.min(1, 1000 / Math.max(1, width, height));
+  canvas.width = Math.max(1, Math.round(width * scale));
+  canvas.height = Math.max(1, Math.round(height * scale));
+  screen = ctx.createImageData(canvas.width, canvas.height);
+  depths = new Float32Array(canvas.width * canvas.height);
+  hits = new Uint32Array(depths.length);
+  viewChanged = true;
+  if (model) draw();
+}
+function rasterize() {
+  const width = canvas.width, height = canvas.height;
+  const size = Math.min(width, height) * .74 * zoom;
+  const a = Math.cos(yaw), b = Math.sin(yaw), c = Math.cos(pitch), d = Math.sin(pitch);
+  const { vertices, normals, faces } = model;
+  hits.fill(0); depths.fill(-Infinity);
+  for (let i = 0; i < vertices.length; i += 3) {
+    const x = vertices[i], y = vertices[i + 1], z = vertices[i + 2], q = -b * x + a * z;
+    projected[i] = width / 2 + (a * x + b * z) * size;
+    projected[i + 1] = height / 2 - (c * y - d * q) * size;
+    projected[i + 2] = d * y + c * q;
+  }
+  for (let i = 0; i < faces.length; i += 3) {
+    const p = faces[i] * 3, q = faces[i + 1] * 3, r = faces[i + 2] * 3;
+    const x = projected[p], y = projected[p + 1], z = projected[p + 2];
+    const ax = projected[q] - x, ay = projected[q + 1] - y, az = projected[q + 2] - z;
+    const bx = projected[r] - x, by = projected[r + 1] - y, bz = projected[r + 2] - z;
+    const area = ax * by - ay * bx;
+    if (Math.abs(area) < 1e-8) continue;
+    const nx = normals[i], ny = normals[i + 1], nz = normals[i + 2], nzTurn = -b * nx + a * nz;
+    const face = i / 3;
+    const dot = -.35 * (a * nx + b * nz) + .55 * (c * ny - d * nzTurn) + .76 * (d * ny + c * nzTurn);
+    light[face] = .55 + .45 * Math.max(0, dot);
+    const left = Math.max(0, Math.floor(Math.min(x, projected[q], projected[r])));
+    const right = Math.min(width - 1, Math.ceil(Math.max(x, projected[q], projected[r])));
+    const top = Math.max(0, Math.floor(Math.min(y, projected[q + 1], projected[r + 1])));
+    const bottom = Math.min(height - 1, Math.ceil(Math.max(y, projected[q + 1], projected[r + 1])));
+    for (let row = top; row <= bottom; row++) {
+      for (let col = left; col <= right; col++) {
+        const dx = col + .5 - x, dy = row + .5 - y;
+        const u = (dx * by - dy * bx) / area, v = (ax * dy - ay * dx) / area;
+        if (u < 0 || v < 0 || u + v > 1) continue;
+        const pixel = row * width + col, depth = z + u * az + v * bz;
+        if (depth <= depths[pixel]) continue;
+        depths[pixel] = depth; hits[pixel] = face + 1;
+      }
+    }
+  }
+  viewChanged = false;
+}
+function draw() {
+  if (viewChanged) rasterize();
+  const pixels = screen.data;
+  for (let i = 0; i < hits.length; i++) {
+    const face = hits[i] - 1, p = i * 4;
+    if (face < 0) { pixels[p + 3] = 0; continue; }
+    const color = colors[face], shade = light[face];
+    pixels[p] = (color >> 16) * shade;
+    pixels[p + 1] = ((color >> 8) & 255) * shade;
+    pixels[p + 2] = (color & 255) * shade;
+    pixels[p + 3] = 255;
+  }
+  ctx.putImageData(screen, 0, 0);
+}
+function resetCamera() {
+  yaw = .42; pitch = .14; zoom = 1;
+  viewChanged = true;
+  if (model) draw();
+}
+function syncHistory() {
+  $('undo').disabled = !undo.length;
+  $('redo').disabled = !redo.length;
+}
+function record(before, after) {
+  undo.push({ before, after });
+  if (undo.length > 40) undo.shift();
+  redo = [];
+  syncHistory();
+}
+function replay(from, to, key) {
+  if (stroke || !from.length) return;
+  const action = from.pop();
+  action[key]();
+  to.push(action);
+  layersUI();
+  draw();
+}
+$('undo').onclick = () => replay(undo, redo, 'before');
+$('redo').onclick = () => replay(redo, undo, 'after');
+function layersUI() {
+  $('layers').replaceChildren();
+  for (let i = model.layers.length - 1; i >= 0; i--) {
+    const layer = model.layers[i];
+    const row = document.createElement('div');
+    row.className = 'row';
+    const toggle = document.createElement('button');
+    toggle.textContent = layer.visible ? '◉' : '○';
+    toggle.title = layer.visible ? 'Laag verbergen' : 'Laag tonen';
+    toggle.onclick = () => {
+      const previous = layer.visible;
+      const apply = value => { layer.visible = value; compose(); };
+      apply(!previous);
+      record(() => apply(previous), () => apply(!previous));
+      layersUI(); draw();
+    };
+    const title = document.createElement('button');
+    title.className = 'layer' + (active === i ? ' active' : '');
+    title.textContent = layer.name;
+    title.title = 'Dubbelklik om de laag te hernoemen';
+    title.onclick = () => {
+      active = i;
+      for (const button of $('layers').querySelectorAll('.layer')) button.classList.toggle('active', button === title);
+    };
+    title.ondblclick = () => {
+      const previous = layer.name, next = prompt('Laagnaam', previous)?.trim();
+      if (!next || next === previous) return;
+      layer.name = next;
+      record(() => { layer.name = previous; }, () => { layer.name = next; });
+      layersUI();
+    };
+    row.append(toggle, title);
+    $('layers').append(row);
+  }
+  syncHistory();
+}
+$('layerAdd').onclick = () => {
+  const previous = active, layer = newLayer('Verflaag ' + (model.layers.length + 1));
+  const add = () => { model.layers.push(layer); active = model.layers.length - 1; compose(); };
+  const remove = () => { model.layers.pop(); active = previous; compose(); };
+  add(); record(remove, add); layersUI(); draw();
+};
+function edgeKey(a, b, vertexCount) {
+  return Math.min(a, b) * vertexCount + Math.max(a, b);
+}
+function connectedFaces(start) {
+  const { faces, points, normals } = model;
+  if (!model.neighbors) {
+    const neighbors = Array.from({ length: faces.length / 3 }, () => []);
+    const edges = new Map();
+    for (let i = 0; i < faces.length; i += 3) {
+      for (let j = 0; j < 3; j++) {
+        const key = edgeKey(faces[i + j], faces[i + (j + 1) % 3], points.length / 3);
+        const previous = edges.get(key), face = i / 3;
+        if (previous === undefined) edges.set(key, face);
+        else if (previous !== face) { neighbors[previous].push(face); neighbors[face].push(previous); }
+      }
+    }
+    model.neighbors = neighbors;
+  }
+  const minimum = Math.cos(Number($('angle').value) * Math.PI / 180), initial = start * 3;
+  const queue = [start], visited = new Set(queue);
+  for (let i = 0; i < queue.length; i++) {
+    for (const next of model.neighbors[queue[i]]) {
+      if (visited.has(next)) continue;
+      visited.add(next);
+      const p = next * 3;
+      const dot = normals[initial] * normals[p] + normals[initial + 1] * normals[p + 1] + normals[initial + 2] * normals[p + 2];
+      if (dot + 1e-6 >= minimum) queue.push(next);
+    }
+  }
+  return queue;
+}
+$('refine').onclick = () => {
+  if (stroke || model.faces.length > limit * 3 / 4) return;
+  const original = model, layerIndex = active, points = model.points.slice(), faces = [], edges = new Map();
+  function midpoint(a, b) {
+    const key = edgeKey(a, b, original.points.length / 3);
+    if (!edges.has(key)) {
+      edges.set(key, points.length / 3);
+      for (let axis = 0; axis < 3; axis++) points.push(original.points[a * 3 + axis] / 2 + original.points[b * 3 + axis] / 2);
+    }
+    return edges.get(key);
+  }
+  for (let i = 0; i < original.faces.length; i += 3) {
+    const a = original.faces[i], b = original.faces[i + 1], c = original.faces[i + 2];
+    const ab = midpoint(a, b), bc = midpoint(b, c), ca = midpoint(c, a);
+    faces.push(a, ab, ca, ab, b, bc, ca, bc, c, ab, bc, ca);
+  }
+  const layers = original.layers.map(layer => {
+    const paint = new Map();
+    for (const [face, color] of layer.paint) {
+      for (let child = 0; child < 4; child++) paint.set(face * 4 + child, color);
+    }
+    return { ...layer, paint };
+  });
+  const refined = makeModel(model.name, points, faces, layers);
+  setModel(refined, layerIndex);
+  record(() => setModel(original, layerIndex), () => setModel(refined, layerIndex));
+  status('Mesh verfijnd. De vorm en kleuren zijn behouden.');
+};
+const tools = document.querySelectorAll('[data-tool]');
+function selectTool(next) {
+  tool = next;
+  canvas.style.cursor = tool === 'orbit' ? 'grab' : 'crosshair';
+  for (const button of tools) button.classList.toggle('active', button.dataset.tool === next);
+}
+for (const button of tools) button.onclick = () => selectTool(button.dataset.tool);
+selectTool(tool);
+function setColor(value) {
+  $('color').value = value;
+  $('hex').textContent = value.toUpperCase();
+  for (const button of $('swatches').children) button.classList.toggle('active', button.dataset.color === value.toLowerCase());
+}
+for (const color of ['#b095ff', '#f685ab', '#f38167', '#ffc477', '#dafa87', '#8de1c3', '#54d7f2', '#6893ff', '#f4f5ff', '#252836']) {
+  const button = document.createElement('button');
+  button.dataset.color = color; button.style.background = color; button.setAttribute('aria-label', color);
+  button.onclick = () => setColor(color);
+  $('swatches').append(button);
+}
+setColor($('color').value);
+$('color').oninput = () => setColor($('color').value);
+for (const key of ['size', 'angle']) $(key).oninput = () => { $(key + 'Value').value = $(key).value; };
+function paintFace(layer, face, value) {
+  if (value === undefined) layer.paint.delete(face);
+  else layer.paint.set(face, value);
+  composeFace(face);
+}
+function pointerCoords(event) {
+  const box = canvas.getBoundingClientRect();
+  return [event.clientX - box.left, event.clientY - box.top];
+}
+function applyStroke(x, y) {
+  const ratio = canvas.width / canvas.clientWidth;
+  x = Math.floor(x * ratio); y = Math.floor(y * canvas.height / canvas.clientHeight);
+  const { mode, layer, value, changes } = stroke;
+  const inside = x >= 0 && y >= 0 && x < canvas.width && y < canvas.height;
+  const id = inside ? hits[y * canvas.width + x] : 0;
+  if (mode === 'pick') { if (id) setColor(hex(colors[id - 1])); return; }
+  let faces;
+  if (mode === 'fill') faces = id ? connectedFaces(id - 1) : [];
+  else {
+    const radius = Math.round(Number($('size').value) * ratio / 2);
+    faces = new Set();
+    for (let row = Math.max(0, y - radius); row <= Math.min(canvas.height - 1, y + radius); row++) {
+      for (let col = Math.max(0, x - radius); col <= Math.min(canvas.width - 1, x + radius); col++) {
+        const hit = hits[row * canvas.width + col];
+        if (hit && (col - x) ** 2 + (row - y) ** 2 <= radius ** 2) faces.add(hit - 1);
+      }
+    }
+  }
+  for (const face of faces) {
+    const previous = layer.paint.get(face);
+    if (previous === value) continue;
+    if (!changes.has(face)) changes.set(face, previous);
+    paintFace(layer, face, value);
+  }
+}
+canvas.oncontextmenu = event => event.preventDefault();
+canvas.onpointerdown = event => {
+  if (stroke || event.button > 2) return;
+  const mode = event.button === 0 ? tool : 'orbit', layer = model.layers[active];
+  if (mode !== 'orbit' && mode !== 'pick' && !layer.visible) { status('Maak de actieve laag zichtbaar om te schilderen.'); return; }
+  const [x, y] = pointerCoords(event);
+  const value = mode === 'erase' ? undefined : parseInt($('color').value.slice(1), 16);
+  stroke = { id: event.pointerId, mode, layer, value, x, y, changes: new Map() };
+  canvas.setPointerCapture(event.pointerId);
+  if (mode !== 'orbit') { applyStroke(x, y); draw(); }
+};
+canvas.onpointermove = event => {
+  if (stroke?.id !== event.pointerId) return;
+  const [x, y] = pointerCoords(event), dx = x - stroke.x, dy = y - stroke.y;
+  if (stroke.mode === 'orbit') {
+    yaw += dx * .012; pitch += dy * .012; viewChanged = true; draw();
+  } else if (stroke.mode === 'brush' || stroke.mode === 'erase') {
+    const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / Math.max(1, Number($('size').value) / 4)));
+    for (let i = 1; i <= steps; i++) applyStroke(stroke.x + dx * i / steps, stroke.y + dy * i / steps);
+    draw();
+  }
+  stroke.x = x; stroke.y = y;
+};
+function finishStroke(event) {
+  if (stroke?.id !== event.pointerId) return;
+  const { changes, layer, value } = stroke;
+  stroke = null;
+  if (!changes.size) return;
+  record(
+    () => { for (const [face, previous] of changes) paintFace(layer, face, previous); },
+    () => { for (const face of changes.keys()) paintFace(layer, face, value); }
+  );
+  status(changes.size.toLocaleString('nl-NL') + ' driehoeken bijgewerkt.');
+}
+canvas.onpointerup = canvas.onpointercancel = canvas.onlostpointercapture = finishStroke;
+canvas.addEventListener('wheel', event => {
+  event.preventDefault();
+  zoom = Math.max(.2, Math.min(12, zoom * Math.exp(-event.deltaY * .001)));
+  viewChanged = true; draw();
+}, { passive: false });
+$('camera').onclick = resetCamera;
+document.addEventListener('keydown', event => {
+  if (event.target.matches('input,select,textarea') || stroke) return;
+  const key = event.key.toLowerCase();
+  if (event.ctrlKey || event.metaKey) {
+    if (key === 'z' || key === 'y' || key === 's') {
+      event.preventDefault();
+      $(key === 's' ? 'save' : key === 'y' || event.shiftKey ? 'redo' : 'undo').click();
+    }
+    return;
+  }
+  const next = { b: 'brush', g: 'fill', e: 'erase', i: 'pick', v: 'orbit' }[key];
+  if (next) selectTool(next);
+});
+function readSTL(buffer) {
+  const data = new DataView(buffer);
+  const count = buffer.byteLength >= 84 ? data.getUint32(80, true) : 0;
+  const points = [], faces = [], known = new Map();
+  function vertex(x, y, z) {
+    if (![x, y, z].every(Number.isFinite)) throw new Error('Ongeldige STL-coördinaten.');
+    const key = [x, y, z].join(',');
+    if (!known.has(key)) {
+      known.set(key, points.length / 3);
+      points.push(x, y, z);
+    }
+    faces.push(known.get(key));
+  }
+  if (count && 84 + count * 50 === buffer.byteLength) {
+    if (count > limit) throw new Error('Meer dan 600.000 STL-driehoeken.');
+    for (let face = 0; face < count; face++) {
+      for (let p = 96 + face * 50, end = p + 36; p < end; p += 12) {
+        vertex(data.getFloat32(p, true), data.getFloat32(p + 4, true), data.getFloat32(p + 8, true));
+      }
+    }
+  } else {
+    const text = new TextDecoder().decode(buffer);
+    if (!/^\s*solid\b/i.test(text)) throw new Error('Onleesbaar STL-bestand.');
+    const number = '([+-]?(?:\\d+\\.?\\d*|\\.\\d+)(?:e[+-]?\\d+)?)';
+    const pattern = new RegExp('^\\s*vertex[ \\t]+' + [number, number, number].join('[ \\t]+') + '[ \\t]*\\r?$', 'gmi');
+    for (const [, x, y, z] of text.matchAll(pattern)) {
+      if (faces.length >= limit * 3) throw new Error('Meer dan 600.000 STL-driehoeken.');
+      vertex(Number(x), Number(y), Number(z));
+    }
+    if (!faces.length || faces.length % 3) throw new Error('Onleesbaar STL-bestand.');
+  }
+  return { points, faces };
+}
+function paletteEntries(entries) {
+  if (!Array.isArray(entries) || entries.length > 10000) throw new Error('Ongeldig mengpalet.');
+  return entries.map(item => {
+    const { name, hex, recipe = '' } = item ?? {};
+    if (typeof name !== 'string' || !name.trim() || typeof hex !== 'string' ||
+        !/^#[0-9a-f]{6}$/i.test(hex.trim()) || typeof recipe !== 'string') {
+      throw new Error('Gebruik per mengkleur een naam en een hexkleur (#RRGGBB). Een recept is optioneel.');
+    }
+    return { name: name.trim(), hex: hex.trim().toUpperCase(), recipe: recipe.trim() };
+  });
+}
+function readCSV(text) {
+  const sep = text.split(/\r?\n/, 1)[0].includes(';') ? ';' : ',';
+  const rows = [];
+  let row = [], field = '', quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (char === '"') {
+      if (quoted && text[i + 1] === '"') { field += '"'; i++; }
+      else quoted = !quoted;
+    } else if (!quoted && (char === sep || char === '\n' || char === '\r')) {
+      row.push(field); field = '';
+      if (char !== sep) {
+        if (char === '\r' && text[i + 1] === '\n') i++;
+        if (row.some(value => value.trim())) rows.push(row);
+        row = [];
+      }
+    } else field += char;
+  }
+  if (quoted) throw new Error('Onafgesloten aanhalingstekens in het CSV-bestand.');
+  row.push(field);
+  if (row.some(value => value.trim())) rows.push(row);
+  const header = (rows.shift() ?? []).map(value => value.trim().toLowerCase());
+  const name = header.findIndex(value => value === 'naam' || value === 'name');
+  const hex = header.indexOf('hex');
+  const recipe = header.findIndex(value => value === 'recept' || value === 'recipe');
+  if (name < 0 || hex < 0) throw new Error('Gebruik een CSV met de kolommen naam, hex en optioneel recept.');
+  return rows.map(values => ({ name: values[name], hex: values[hex], recipe: values[recipe] }));
+}
+function setPalette(entries) {
+  palette = entries;
+  const select = $('mix');
+  select.replaceChildren(new Option('Kies een mengkleur', ''));
+  for (const [i, item] of entries.entries()) select.add(new Option(item.name + ' · ' + item.hex, i));
+  select.hidden = !entries.length;
+  $('recipe').textContent = '';
+}
+$('mix').onchange = () => {
+  const color = palette[$('mix').value];
+  $('recipe').textContent = color?.recipe ?? '';
+  if (color) setColor(color.hex);
+};
+$('paletteOpen').onclick = () => $('paletteFile').click();
+$('paletteFile').onchange = async event => {
+  const file = event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const entries = paletteEntries(/\.csv$/i.test(file.name) ? readCSV(text) : JSON.parse(text).colors);
+    if (!entries.length) throw new Error('Dit palet bevat geen mengkleuren.');
+    setPalette(entries);
+    status(entries.length + ' mengkleuren geïmporteerd.');
+  } catch (error) { status(error.message); }
+};
+function openProject(data) {
+  if (data?.version !== 1 || !Array.isArray(data.layers) || !data.layers.length || !Array.isArray(data.faces)) {
+    throw new Error('Onbekend Meshpaint-projectformaat.');
+  }
+  const layers = data.layers.map(layer => {
+    if (typeof layer?.name !== 'string' || typeof layer.visible !== 'boolean' || !Array.isArray(layer.paint) ||
+        !layer.paint.every(entry => Array.isArray(entry) && entry.length === 2 && Number.isInteger(entry[0]) &&
+          entry[0] >= 0 && entry[0] < data.faces.length / 3 && Number.isInteger(entry[1]) &&
+          entry[1] >= 0 && entry[1] <= 0xffffff)) throw new Error('Ongeldige verflaag.');
+    return { ...layer, paint: new Map(layer.paint) };
+  });
+  const entries = paletteEntries(data.mixPalette ?? []);
+  const next = makeModel(data.name, data.points, data.faces, layers);
+  replaceModel(next);
+  setPalette(entries);
+}
+function replaceModel(next) {
+  stroke = null; undo = []; redo = [];
+  yaw = .42; pitch = .14; zoom = 1;
+  setModel(next);
+}
+async function openFile(file) {
+  if (!file) return;
+  try {
+    if (/\.stl$/i.test(file.name)) {
+      const { points, faces } = readSTL(await file.arrayBuffer());
+      replaceModel(makeModel(file.name.slice(0, -4), points, faces, [newLayer('Verflaag 1')]));
+    } else if (/\.meshpaint$/i.test(file.name)) openProject(JSON.parse(await file.text()));
+    else throw new Error('Kies een STL- of .meshpaint-bestand.');
+    status(model.name + ' geopend.');
+  } catch (error) { status(error.message); }
+}
+$('open').onclick = () => $('file').click();
+$('file').onchange = event => {
+  const file = event.target.files[0];
+  event.target.value = '';
+  openFile(file);
+};
+$('view').ondragover = event => event.preventDefault();
+$('view').ondrop = event => { event.preventDefault(); openFile(event.dataTransfer.files[0]); };
+const safeName = name => name.replace(/[<>:"/\\|?*\x00-\x1f]/g, '_').trim() || 'meshpaint-project';
+function download(blob, filename) {
+  const link = document.createElement('a'), url = URL.createObjectURL(blob);
+  link.href = url; link.download = filename;
+  document.body.append(link); link.click(); link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+$('example').onclick = () => download(
+  new Blob(['naam,hex,recept\nViolet,#864CB7,50% magenta + 50% cyaan\n'], { type: 'text/csv' }),
+  'mengkleuren-voorbeeld.csv'
+);
+let dbPromise, saveUrl;
+function recovery(copy) {
+  dbPromise ??= new Promise((resolve, reject) => {
+    const request = indexedDB.open('meshpaint-recovery', 1);
+    request.onupgradeneeded = () => request.result.createObjectStore('projects');
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+  return dbPromise.then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction('projects', copy ? 'readwrite' : 'readonly');
+    const store = tx.objectStore('projects');
+    const request = copy ? store.put(copy, 'latest') : store.get('latest');
+    tx.oncomplete = () => resolve(request.result);
+    tx.onabort = () => reject(tx.error);
+  }));
+}
+function showRecovery() {
+  $('saved').hidden = false;
+  $('restore').hidden = false;
+}
+$('restore').onclick = async () => {
+  try {
+    const copy = await recovery();
+    if (!copy) { status('Er is geen herstelkopie beschikbaar.'); return; }
+    if (!confirm('Herstelkopie openen? Dit vervangt het geopende model.')) return;
+    await openFile(new File([copy.blob], copy.filename, { type: 'application/json' }));
+  } catch (error) { status('Herstelkopie openen mislukt. ' + error.message); }
+};
+$('save').onclick = async () => {
+  if ($('save').disabled) return;
+  $('save').disabled = true;
+  try {
+    const { name, points, faces, layers } = model;
+    const project = { version: 1, name, points, faces, mixPalette: palette,
+      layers: layers.map(layer => ({ ...layer, paint: [...layer.paint] })) };
+    const blob = new Blob([JSON.stringify(project)], { type: 'application/json' });
+    const filename = safeName(name) + '.meshpaint';
+    const previous = saveUrl;
+    saveUrl = URL.createObjectURL(blob);
+    if (previous) setTimeout(() => URL.revokeObjectURL(previous), 30000);
+    const link = $('download');
+    link.href = saveUrl; link.download = filename; link.hidden = false;
+    $('saved').hidden = false;
+    link.click();
+    status('Download aangevraagd. Gebruik de downloadlink rechts als hij niet start.');
+    try {
+      await recovery({ blob, filename });
+      showRecovery();
+      status('Herstelkopie bewaard. Gebruik de downloadlink rechts als de download niet start.');
+    } catch { status('Gebruik Download .meshpaint rechts als de download niet start.'); }
+  } catch (error) { status('Project opslaan mislukt. ' + error.message); }
+  finally { $('save').disabled = false; }
+};
+recovery().then(copy => { if (copy) showRecovery(); }).catch(() => {});
+const crcTable = Uint32Array.from({ length: 256 }, (_, index) => {
+  for (let bit = 0; bit < 8; bit++) index = (index >>> 1) ^ ((index & 1) ? 0xedb88320 : 0);
+  return index >>> 0;
+});
+function zip(entries) {
+  const encoder = new TextEncoder(), parts = [], directory = [];
+  let offset = 0, directorySize = 0;
+  for (const [path, text] of entries) {
+    const filename = encoder.encode(path), body = encoder.encode(text);
+    let crc = 0xffffffff;
+    for (const byte of body) crc = (crc >>> 8) ^ crcTable[(crc ^ byte) & 255];
+    crc = (crc ^ 0xffffffff) >>> 0;
+    const local = new DataView(new ArrayBuffer(30 + filename.length));
+    const central = new DataView(new ArrayBuffer(46 + filename.length));
+    local.setUint32(0, 0x04034b50, true);
+    central.setUint32(0, 0x02014b50, true);
+    central.setUint16(4, 20, true);
+    for (const [header, start] of [[local, 4], [central, 6]]) {
+      header.setUint16(start, 20, true);
+      header.setUint16(start + 8, 33, true);
+      header.setUint32(start + 10, crc, true);
+      header.setUint32(start + 14, body.length, true);
+      header.setUint32(start + 18, body.length, true);
+      header.setUint16(start + 22, filename.length, true);
+    }
+    new Uint8Array(local.buffer).set(filename, 30);
+    new Uint8Array(central.buffer).set(filename, 46);
+    central.setUint32(42, offset, true);
+    parts.push(local.buffer, body);
+    directory.push(central.buffer);
+    offset += local.byteLength + body.length;
+    directorySize += central.byteLength;
+  }
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true);
+  end.setUint16(8, entries.length, true);
+  end.setUint16(10, entries.length, true);
+  end.setUint32(12, directorySize, true);
+  end.setUint32(16, offset, true);
+  return new Blob([...parts, ...directory, end.buffer], { type: 'model/3mf' });
+}
+function make3MF() {
+  const { points, faces } = model;
+  const used = [...new Set(colors)], indices = new Map(used.map((color, index) => [color, index]));
+  const xml = ['<?xml version="1.0" encoding="UTF-8"?>',
+    '<model unit="millimeter" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:m="http://schemas.microsoft.com/3dmanufacturing/material/2015/02" requiredextensions="m">',
+    '<resources><m:colorgroup id="1">'];
+  for (const color of used) xml.push('<m:color color="' + hex(color) + 'FF"/>');
+  xml.push('</m:colorgroup><object id="2" type="model" pid="1" pindex="0"><mesh><vertices>');
+  for (let i = 0; i < points.length; i += 3) {
+    xml.push('<vertex x="' + points[i] + '" y="' + points[i + 1] + '" z="' + points[i + 2] + '"/>');
+  }
+  xml.push('</vertices><triangles>');
+  for (let i = 0; i < faces.length; i += 3) {
+    const p = indices.get(colors[i / 3]);
+    xml.push('<triangle v1="' + faces[i] + '" v2="' + faces[i + 1] + '" v3="' + faces[i + 2] +
+      '" pid="1" p1="' + p + '" p2="' + p + '" p3="' + p + '"/>');
+  }
+  xml.push('</triangles></mesh></object></resources><build><item objectid="2"/></build></model>');
+  return zip([
+    ['[Content_Types].xml', '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>'],
+    ['_rels/.rels', '<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>'],
+    ['3D/3dmodel.model', xml.join('')]
+  ]);
+}
+$('export').onclick = () => {
+  try {
+    download(make3MF(), safeName(model.name) + '.3mf');
+    status('3MF-download aangevraagd. De zichtbare kleuren zijn opgenomen. STL-maten zijn gelezen als millimeters.');
+  } catch (error) { status('3MF exporteren mislukt. ' + error.message); }
+};
+function demo() {
+  const points = [], faces = [], paint = newLayer('Voorbeeldkleuren');
+  const profile = [[13,0],[15,4],[15,8],[20,11],[23,18],[24,28],[24,50],[22,62],[18,72],[12,81],[5,88],[1,90]];
+  const rings = [], segments = 64;
+  for (let i = 0; i < profile.length - 1; i++) {
+    for (let step = 0; step < 6; step++) {
+      const t = step / 6;
+      rings.push(profile[i].map((value, j) => value + (profile[i + 1][j] - value) * t));
+    }
+  }
+  rings.push(profile.at(-1));
+  for (const [radius, height] of rings) {
+    for (let s = 0; s < segments; s++) {
+      const t = s / segments * Math.PI * 2;
+      points.push(radius * Math.sin(t), -radius * Math.cos(t), height);
+    }
+  }
+  function triangle(a, b, c, color) {
+    paint.paint.set(faces.length / 3, color);
+    faces.push(a, b, c);
+  }
+  for (let i = 0; i < rings.length - 1; i++) {
+    const height = (rings[i][1] + rings[i + 1][1]) / 2;
+    for (let s = 0; s < segments; s++) {
+      const t = (s + .5) / segments * Math.PI * 2 - .20;
+      const x = Math.atan2(Math.sin(t), Math.cos(t)) / .61, y = (height - 47) / 12;
+      const window = x * x + y * y;
+      let color = height > 66 || (height > 11 && height < 20) ? 0xf38167 : height < 11 ? 0x5a5299 : 0xa48aee;
+      if ((height > 62 && height <= 66) || (height >= 20 && height < 23)) color = 0xffc477;
+      if (window < 1.2) color = window > .84 ? 0xffc477 : y > .25 && x < .25 ? 0x83ebf5 : 0x356d9e;
+      const a = i * segments + s, b = i * segments + (s + 1) % segments;
+      triangle(a, b, a + segments, color);
+      triangle(b, b + segments, a + segments, color);
+    }
+  }
+  const bottom = points.length / 3, top = bottom + 1, last = (rings.length - 1) * segments;
+  points.push(0, 0, 0, 0, 0, 90);
+  for (let s = 0; s < segments; s++) {
+    const next = (s + 1) % segments;
+    triangle(bottom, next, s, 0x5a5299);
+    triangle(top, last + s, last + next, 0xf38167);
+  }
+  return makeModel('Verkenner - voorbeeld', points, faces, [paint, newLayer('Verflaag 1')]);
+}
+resize();
+setModel(demo());
+new ResizeObserver(resize).observe(canvas);
+status('Open een STL of schilder op het voorbeeld. Rechts slepen draait, scrollen zoomt.');
+})();
+</script>
+</html>
