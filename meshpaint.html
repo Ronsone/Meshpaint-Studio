@@ -1,40 +1,40 @@
 <!doctype html>
-<html lang="nl">
+<html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Meshpaint Studio</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#15161d;color:#eef0fa;font:14px system-ui,sans-serif}button,select,input{font:inherit}button,select{background:#2a2c39;color:inherit;border:1px solid #414354;border-radius:8px;padding:8px;cursor:pointer}button:hover,button.active{border-color:#bb9aff;background:#40345a}button:disabled{opacity:.45}.primary{background:#b89aff;color:#1c1330;font-weight:bold}header{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px;border-bottom:1px solid #363849}header strong{font-size:20px;margin-right:auto}header strong span,a{color:#c4a7ff}main{display:grid;grid-template-columns:95px minmax(0,1fr) 245px;height:calc(100dvh - 111px);min-height:320px}nav,aside{padding:12px;background:#1e202a;overflow:auto}nav button{width:100%;margin-bottom:5px}nav button:is([data-tool=selectBrush],[data-tool=smartMask],[data-tool=contour]){font-size:11px;padding-inline:2px;overflow-wrap:anywhere}section{position:relative;min-width:0;background:radial-gradient(ellipse at 50% 45%,#3b4053,#171922 75%)}#mesh{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}#guide{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.controls{flex-wrap:wrap}.controls button{flex:1}.overlay{position:absolute;top:12px;left:12px;background:#21232ee0;padding:8px 12px;border-radius:8px;pointer-events:none}.camera{position:absolute;bottom:12px;right:12px}h2{font-size:14px;margin:0 0 10px}hr{border:0;border-top:1px solid #383a48;margin:16px 0}label{display:block;margin:8px 0;color:#ccd0e1}input[type=range],select{width:100%;accent-color:#c4a7ff}.row{display:flex;align-items:center;gap:6px;margin:6px 0}.row .layer{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.swatches{display:flex;flex-wrap:wrap;gap:5px}.swatches button{width:24px;height:24px;padding:0}.swatches button.active{outline:2px solid white}small,footer{color:#c2c6d9}footer{padding:8px 12px}#saved a{display:inline-block;margin:0 0 8px}#saved a[hidden]{display:none}@media(max-width:680px){main{grid-template-columns:66px minmax(0,1fr) 142px}nav,aside{padding:6px}nav button{font-size:10px}header strong{font-size:16px}header button{font-size:11px}}
+*{box-sizing:border-box}body{display:grid;grid-template-rows:auto minmax(320px,1fr) auto;height:100dvh;margin:0;background:#15161d;color:#eef0fa;font:14px system-ui,sans-serif}button,select,input{font:inherit}button,select{background:#2a2c39;color:inherit;border:1px solid #414354;border-radius:8px;padding:8px;cursor:pointer}button:hover,button.active{border-color:#bb9aff;background:#40345a}button:disabled{opacity:.45}.primary{background:#b89aff;color:#1c1330;font-weight:bold}header{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px;border-bottom:1px solid #363849}header strong{font-size:20px;white-space:nowrap}#toolHelp{flex:1 1 220px;min-width:0;margin:0 8px 0 4px;padding-left:12px;border-left:1px solid #44465b;color:#d7d9e8;font-size:12px;line-height:1.35}#toolHelp strong{font-size:inherit;white-space:normal;color:#eee9ff}nav button[data-tool=wand]{display:flex;align-items:center;justify-content:center;gap:4px;padding-inline:3px;font-size:11px}#wandIcon{flex:none}header strong span,a{color:#c4a7ff}main{display:grid;grid-template-columns:95px minmax(0,1fr) 245px;min-height:0}nav,aside{padding:12px;background:#1e202a;overflow:auto}nav button{width:100%;margin-bottom:5px}nav button:is([data-tool=selectBrush],[data-tool=smartMask],[data-tool=contour]){font-size:11px;padding-inline:2px;overflow-wrap:anywhere}section{position:relative;min-width:0;background:radial-gradient(ellipse at 50% 45%,#3b4053,#171922 75%)}#mesh{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}#guide{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.controls{flex-wrap:wrap}.controls button{flex:1}.overlay{position:absolute;top:12px;left:12px;background:#21232ee0;padding:8px 12px;border-radius:8px;pointer-events:none}.camera{position:absolute;bottom:12px;right:12px}h2{font-size:14px;margin:0 0 10px}hr{border:0;border-top:1px solid #383a48;margin:16px 0}label{display:block;margin:8px 0;color:#ccd0e1}input[type=range],select{width:100%;accent-color:#c4a7ff}.row{display:flex;align-items:center;gap:6px;margin:6px 0}.row .layer{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.swatches{display:flex;flex-wrap:wrap;gap:5px}.swatches button{width:24px;height:24px;padding:0}.swatches button.active{outline:2px solid white}small,footer{color:#c2c6d9}footer{padding:8px 12px}#saved a{display:inline-block;margin:0 0 8px}#saved a[hidden]{display:none}@media(max-width:680px){main{grid-template-columns:66px minmax(0,1fr) 142px}nav,aside{padding:6px}nav button{font-size:10px}header strong{font-size:16px}header button{font-size:11px}#toolHelp{flex-basis:100%;order:1;margin:2px 0 0}nav button[data-tool=wand]{flex-direction:column}}
 </style>
-<header><strong>Meshpaint <span>Studio</span></strong><button id="open">STL / project openen</button><button id="save">Project opslaan</button><button id="export" class="primary">3MF exporteren</button><input id="file" type="file" accept=".stl,.meshpaint" hidden></header>
+<header><strong>Meshpaint <span>Studio</span></strong><p id="toolHelp" aria-live="polite"></p><button id="open">Open STL / Project</button><button id="save">Save Project</button><button id="export" class="primary">Export 3MF</button><input id="file" type="file" accept=".stl,.meshpaint" hidden></header>
 <main>
-<nav aria-label="Gereedschap">
-<button data-tool="brush" title="Penseel (B)">Penseel</button><button data-tool="line" title="Lijn (L)">Lijn</button><button data-tool="curve" title="Curve (C)">Curve</button><button data-tool="selectBrush" title="Selectiepenseel (M). Shift voegt toe, Alt trekt af.">Selectiepenseel</button><button data-tool="smartMask" title="Slim masker (S)">Slim masker</button><button data-tool="contour" title="Contour bijwerken (T)">Contour bijwerken</button><button data-tool="wand" title="Toverstaf (W). Shift voegt toe, Alt trekt af.">Toverstaf</button><button data-tool="fill" title="Vullen (G)">Vullen</button><button data-tool="erase" title="Gum (E)">Gum</button><button data-tool="pick" title="Pipet (I)">Pipet</button><button data-tool="orbit" title="Draaien (V)">Draaien</button><hr><button id="undo">Ongedaan</button><button id="redo">Opnieuw</button>
+<nav aria-label="Tools">
+<button data-tool="brush" title="Brush (B)">Brush</button><button data-tool="line" title="Line (L)">Line</button><button data-tool="curve" title="Curve (C)">Curve</button><button data-tool="selectBrush" title="Selection Brush (M). Shift adds, Alt subtracts.">Select Brush</button><button data-tool="smartMask" title="Smart Mask (S)">Smart Mask</button><button data-tool="contour" title="Refine Edge (T)">Refine Edge</button><button data-tool="wand" title="Magic Wand (W). Shift adds, Alt subtracts."><img id="wandIcon" width="18" height="18" alt=""><span>Magic Wand</span></button><button data-tool="fill" title="Fill (G)">Fill</button><button data-tool="erase" title="Eraser (E)">Eraser</button><button data-tool="pick" title="Eyedropper (I)">Eyedropper</button><button data-tool="orbit" title="Orbit (V)">Orbit</button><hr><button id="undo">Undo</button><button id="redo">Redo</button>
 </nav>
-<section id="view"><canvas id="mesh" aria-label="Schilderbaar 3D-model"></canvas><canvas id="guide" aria-hidden="true"></canvas><div class="overlay"><strong id="name"></strong><br><small id="count"></small></div><button class="camera" id="camera" title="Rechts slepen om te draaien, scrollen om te zoomen">Weergave herstellen</button></section>
+<section id="view"><canvas id="mesh" aria-label="Paintable 3D model"></canvas><canvas id="guide" aria-hidden="true"></canvas><div class="overlay"><strong id="name"></strong><br><small id="count"></small></div><button class="camera" id="camera" title="Right-drag to orbit, scroll to zoom">Reset View</button></section>
 <aside>
-<h2>Kleur</h2><div class="row"><input id="color" type="color" value="#b095ff" aria-label="Verfkleur"><strong id="hex"></strong></div><div class="swatches" id="swatches"></div><div class="row controls"><button id="lockColor" aria-pressed="false">Kleur vergrendelen</button><select id="lockedColors" aria-label="Vergrendelde kleuren" hidden></select></div>
-<label for="mix">Mengkleuren</label><div class="row"><button id="paletteOpen">Palet importeren</button><button id="example" title="CSV-voorbeeld downloaden">CSV</button></div><input id="paletteFile" type="file" accept=".csv,.json" hidden><select id="mix" hidden></select><small id="recipe"></small>
-<hr><label for="shape">Penseelvorm</label><select id="shape"><option value="round">Rond</option><option value="square">Vierkant</option><option value="chisel">Beitel</option></select><div id="rotation" hidden><label for="brushAngle">Draaihoek <output id="brushAngleValue">0</output>°</label><input id="brushAngle" type="range" min="0" max="180" value="0"></div><label for="size">Penseelgrootte <output id="sizeValue">24</output> px</label><input id="size" type="range" min="2" max="100" value="24">
-<label for="angle">Vulhoek <output id="angleValue">25</output>°</label><input id="angle" type="range" min="0" max="90" value="25">
-<hr><h2>Masker</h2><label for="wandMode">Toverstaf selecteert</label><select id="wandMode"><option value="angle">Verbonden binnen vulhoek</option><option value="connected">Los onderdeel</option><option value="color">Verbonden met dezelfde kleur</option><option value="globalColor">Alle vlakken met dezelfde kleur</option></select>
-<label for="maskMode">Selectiebewerking</label><select id="maskMode"><option value="replace">Vervangen</option><option value="add">Toevoegen</option><option value="subtract">Aftrekken</option></select><div class="row controls"><button id="invertMask">Omkeren</button><button id="clearMask">Wissen</button></div><small id="maskCount"></small>
-<label><input type="checkbox" id="maskInspect"> Masker markeren</label>
-<div id="selectionSettings" hidden><label for="selectionGrowth">Uitbreiding <output id="selectionGrowthValue">18</output> px</label><input id="selectionGrowth" type="range" min="0" max="100" value="18">
-<label for="selectionEdge">Randhoek <output id="selectionEdgeValue">24</output>°</label><input id="selectionEdge" type="range" min="1" max="90" value="24"></div>
-<div id="smartSettings" hidden><label for="smartMode">Werkwijze</label><select id="smartMode"><option value="trace">Rand tekenen</option><option value="guides">Markeringen +/−</option></select>
-<div id="traceControls"><small>Teken met het kruispunt. Klik daarna op de kant die je wilt behouden.</small><div class="row controls"><button id="traceReset">Opnieuw tekenen</button></div></div>
-<div id="seedControls" hidden><label for="seedMode">Markering</label><select id="seedMode"><option value="1">+ Meenemen</option><option value="-1">− Uitsluiten</option></select>
-<label for="smartReach">Bereik <output id="smartReachValue">6</output>% van model</label><input id="smartReach" type="range" min="1" max="25" value="6">
-<div class="row controls"><button id="maskSuggest">Voorstel tonen</button><button id="seedClear">Markeringen wissen</button></div><small id="seedCount"></small></div>
-<div class="row controls"><button id="maskApply">Toepassen</button></div></div>
-<div id="contourSettings" hidden><label for="contourMode">Contourbewerking</label><select id="contourMode"><option value="expand">Uitbreiden</option><option value="shrink">Inkrimpen</option><option value="smooth">Glad maken</option><option value="snap">Naar scherpe rand</option></select>
-<label for="contourSteps">Sterkte <output id="contourStepsValue">2</output> stappen</label><input id="contourSteps" type="range" min="1" max="10" value="2"></div><hr>
-<button id="refine" title="Verdeel elke driehoek in vier">Mesh verfijnen ×4</button><hr>
-<div class="row"><h2 style="margin:0 auto 0 0">Lagen</h2><button id="layerAdd" aria-label="Laag toevoegen">+</button></div><div id="layers"></div>
-<div id="saved" hidden><hr><h2>Opgeslagen project</h2><a id="download" hidden>Download .meshpaint</a><button id="restore" hidden>Herstelkopie openen</button></div>
+<h2>Color</h2><div class="row"><input id="color" type="color" value="#b095ff" aria-label="Paint color"><strong id="hex"></strong></div><div class="swatches" id="swatches"></div><div class="row controls"><button id="lockColor" aria-pressed="false">Lock Color</button><select id="lockedColors" aria-label="Locked colors" hidden></select></div>
+<label for="mix">Mixed Colors</label><div class="row"><button id="paletteOpen">Import Palette</button><button id="example" title="Download CSV example">CSV</button></div><input id="paletteFile" type="file" accept=".csv,.json" hidden><select id="mix" hidden></select><small id="recipe"></small>
+<hr><label for="shape">Brush shape</label><select id="shape"><option value="round">Round</option><option value="square">Square</option><option value="chisel">Chisel</option></select><div id="rotation" hidden><label for="brushAngle">Rotation <output id="brushAngleValue">0</output>°</label><input id="brushAngle" type="range" min="0" max="180" value="0"></div><label for="size">Brush size <output id="sizeValue">24</output> px</label><input id="size" type="range" min="2" max="100" value="24">
+<label for="angle">Fill angle <output id="angleValue">25</output>°</label><input id="angle" type="range" min="0" max="90" value="25">
+<hr><h2>Mask</h2><label for="wandMode">Wand selects</label><select id="wandMode"><option value="angle">Connected within fill angle</option><option value="connected">Connected component</option><option value="color">Connected faces of the same color</option><option value="globalColor">All faces of the same color</option></select>
+<label for="maskMode">Selection operation</label><select id="maskMode"><option value="replace">Replace</option><option value="add">Add</option><option value="subtract">Subtract</option></select><div class="row controls"><button id="invertMask">Invert</button><button id="clearMask">Clear</button></div><small id="maskCount"></small>
+<label><input type="checkbox" id="maskInspect"> Highlight mask</label>
+<div id="selectionSettings" hidden><label for="selectionGrowth">Expansion <output id="selectionGrowthValue">18</output> px</label><input id="selectionGrowth" type="range" min="0" max="100" value="18">
+<label for="selectionEdge">Edge angle <output id="selectionEdgeValue">24</output>°</label><input id="selectionEdge" type="range" min="1" max="90" value="24"></div>
+<div id="smartSettings" hidden><label for="smartMode">Mode</label><select id="smartMode"><option value="trace">Trace Boundary</option><option value="guides">Include/Exclude Marks</option></select>
+<div id="traceControls"><small>Trace with the crosshair, then click the side you want to keep.</small><div class="row controls"><button id="traceReset">Redraw</button></div></div>
+<div id="seedControls" hidden><label for="seedMode">Mark</label><select id="seedMode"><option value="1">+ Include</option><option value="-1">− Exclude</option></select>
+<label for="smartReach">Reach <output id="smartReachValue">6</output>% of model</label><input id="smartReach" type="range" min="1" max="25" value="6">
+<div class="row controls"><button id="maskSuggest">Preview</button><button id="seedClear">Clear Marks</button></div><small id="seedCount"></small></div>
+<div class="row controls"><button id="maskApply">Apply</button></div></div>
+<div id="contourSettings" hidden><label for="contourMode">Edge operation</label><select id="contourMode"><option value="expand">Expand</option><option value="shrink">Shrink</option><option value="smooth">Smooth</option><option value="snap">Snap to Edge</option></select>
+<label for="contourSteps">Strength <output id="contourStepsValue">2</output> steps</label><input id="contourSteps" type="range" min="1" max="10" value="2"></div><hr>
+<button id="refine" title="Split each triangle into four">Subdivide Mesh ×4</button><hr>
+<div class="row"><h2 style="margin:0 auto 0 0">Layers</h2><button id="layerAdd" aria-label="Add layer">+</button></div><div id="layers"></div>
+<div id="saved" hidden><hr><h2>Saved Project</h2><a id="download" hidden>Download .meshpaint</a><button id="restore" hidden>Open Recovery Copy</button></div>
 </aside></main>
-<footer id="status" role="status">Open dit HTML-bestand rechtstreeks in je browser om de editor te gebruiken.</footer>
+<footer id="status" role="status">Open this HTML file directly in your browser to use the editor.</footer>
 <script>
 (() => {
 'use strict';
@@ -44,7 +44,7 @@ const guideContext = guide.getContext('2d');
 const ctx = canvas.getContext('2d');
 const status = text => { $('status').textContent = text; };
 const limit = 3000000;
-const limitLabel = limit.toLocaleString('nl-NL');
+const limitLabel = limit.toLocaleString('en-US');
 const importBatch = 65536;
 const base = 0xc6cad7;
 const hex = color => '#' + color.toString(16).padStart(6, '0').toUpperCase();
@@ -64,14 +64,14 @@ function bounds(points) {
     high[axis] = Math.max(high[axis], points[i]);
   }
   const span = Math.max(...high.map((v, i) => v - low[i]));
-  if (!span || !Number.isFinite(span)) throw new Error('Het model heeft ongeldige afmetingen.');
+  if (!span || !Number.isFinite(span)) throw new Error('The model has invalid dimensions.');
   return { span, center: low.map((v, i) => v + (high[i] - v) / 2) };
 }
 function makeModel(name, points, faces, layers) {
   if (typeof name !== 'string' || !Array.isArray(points) || !points.length || points.length % 3 ||
       !points.every(Number.isFinite) || !Array.isArray(faces) || !faces.length || faces.length % 3 ||
       faces.length > limit * 3 || !faces.every(v => Number.isInteger(v) && v >= 0 && v < points.length / 3)) {
-    throw new Error('Ongeldige mesh of meer dan ' + limitLabel + ' driehoeken.');
+    throw new Error('Invalid mesh or more than ' + limitLabel + ' triangles.');
   }
   const { span, center } = bounds(points);
   const vertices = new Float32Array(points.length), normals = new Float32Array(faces.length);
@@ -96,7 +96,7 @@ function setModel(next, layerIndex = next.layers.length - 1) {
   light = new Float32Array(colors.length);
   projected = new Float32Array(model.vertices.length);
   $('name').textContent = model.name;
-  $('count').textContent = colors.length.toLocaleString('nl-NL') + ' driehoeken';
+  $('count').textContent = colors.length.toLocaleString('en-US') + ' triangles';
   $('refine').disabled = colors.length > limit / 4;
   viewChanged = true;
   compose();
@@ -231,7 +231,7 @@ function layersUI() {
     row.className = 'row';
     const toggle = document.createElement('button');
     toggle.textContent = layer.visible ? '◉' : '○';
-    toggle.title = layer.visible ? 'Laag verbergen' : 'Laag tonen';
+    toggle.title = layer.visible ? 'Hide layer' : 'Show layer';
     toggle.onclick = () => {
       const previous = layer.visible;
       const apply = value => { layer.visible = value; compose(); };
@@ -242,13 +242,13 @@ function layersUI() {
     const title = document.createElement('button');
     title.className = 'layer' + (active === i ? ' active' : '');
     title.textContent = layer.name;
-    title.title = 'Dubbelklik om de laag te hernoemen';
+    title.title = 'Double-click to rename the layer';
     title.onclick = () => {
       active = i;
       for (const button of $('layers').querySelectorAll('.layer')) button.classList.toggle('active', button === title);
     };
     title.ondblclick = () => {
-      const previous = layer.name, next = prompt('Laagnaam', previous)?.trim();
+      const previous = layer.name, next = prompt('Layer name', previous)?.trim();
       if (!next || next === previous) return;
       layer.name = next;
       record(() => { layer.name = previous; }, () => { layer.name = next; });
@@ -260,7 +260,7 @@ function layersUI() {
   syncHistory();
 }
 $('layerAdd').onclick = () => {
-  const previous = active, layer = newLayer('Verflaag ' + (model.layers.length + 1));
+  const previous = active, layer = newLayer('Paint Layer ' + (model.layers.length + 1));
   const add = () => { model.layers.push(layer); active = model.layers.length - 1; compose(); };
   const remove = () => { model.layers.pop(); active = previous; compose(); };
   add(); record(remove, add); layersUI(); draw();
@@ -362,11 +362,71 @@ $('refine').onclick = () => {
   const after = () => { mask = afterMask; setModel(refined, layerIndex); };
   after();
   record(before, after);
-  status('Mesh verfijnd. De vorm en kleuren zijn behouden.');
+  status('Mesh subdivided. Shape and colors preserved.');
 };
 const tools = document.querySelectorAll('[data-tool]');
+const toolHelp = {
+  brush: ['Brush', 'Drag over the model to paint. Adjust the size and shape on the right.'],
+  line: ['Line', 'Click a start and end point to paint a straight stroke.'],
+  curve: ['Curve', 'Click the start, a control point, and the end to paint a curved stroke.'],
+  selectBrush: ['Select Brush', 'Drag to select a surface up to sharp edges. Shift adds and Alt subtracts.'],
+  contour: ['Refine Edge', 'Choose an operation, then brush over the edge of an active mask.'],
+  wand: ['Magic Wand', 'Click a face to select similar or connected faces. Shift adds and Alt subtracts.'],
+  fill: ['Fill', 'Click a face to color connected faces within the fill angle.'],
+  erase: ['Eraser', 'Drag to erase paint from the active layer.'],
+  pick: ['Eyedropper', 'Click the model to sample its visible color.'],
+  orbit: ['Orbit', 'Drag to rotate the model. Scroll to zoom.']
+};
+function updateToolHelp() {
+  const [name, instruction] = tool === 'smartMask'
+    ? ['Smart Mask', usesTrace()
+        ? 'Trace a boundary with the crosshair, click the side to keep, then click Apply.'
+        : 'Mark faces to include or exclude, then click Preview and Apply.']
+    : toolHelp[tool];
+  const label = document.createElement('strong');
+  label.textContent = name;
+  $('toolHelp').replaceChildren(label, ' — ' + instruction);
+}
+function wandArtwork() {
+  const icon = document.createElement('canvas');
+  icon.width = icon.height = 26;
+  const drawing = icon.getContext('2d');
+  drawing.lineCap = 'round';
+  function stroke(path, color, width) {
+    drawing.beginPath();
+    drawing.moveTo(...path[0]);
+    for (const point of path.slice(1)) drawing.lineTo(...point);
+    drawing.strokeStyle = color;
+    drawing.lineWidth = width;
+    drawing.stroke();
+  }
+  stroke([[5, 22], [18, 9]], '#11131d', 6);
+  stroke([[5, 22], [18, 9]], '#e8e5f5', 3.5);
+  stroke([[14, 13], [18, 9]], '#ba95ff', 3.5);
+  for (const [x, y, radius] of [[20, 5, 3.6], [11, 6, 2.2], [23, 13, 1.9]]) {
+    drawing.beginPath();
+    drawing.moveTo(x, y - radius);
+    drawing.lineTo(x + 1, y - 1);
+    drawing.lineTo(x + radius, y);
+    drawing.lineTo(x + 1, y + 1);
+    drawing.lineTo(x, y + radius);
+    drawing.lineTo(x - 1, y + 1);
+    drawing.lineTo(x - radius, y);
+    drawing.lineTo(x - 1, y - 1);
+    drawing.closePath();
+    drawing.strokeStyle = '#11131d';
+    drawing.lineWidth = 1.8;
+    drawing.stroke();
+    drawing.fillStyle = '#e0c6ff';
+    drawing.fill();
+  }
+  return icon.toDataURL();
+}
+const wandImage = wandArtwork();
+$('wandIcon').src = wandImage;
 function selectTool(next) {
   tool = next;
+  updateToolHelp();
   $('selectionSettings').hidden = next !== 'selectBrush';
   $('smartSettings').hidden = next !== 'smartMask';
   $('contourSettings').hidden = next !== 'contour';
@@ -375,10 +435,15 @@ function selectTool(next) {
   anchors = [];
   drawGuide();
   if (tool === 'smartMask') smartInstructions();
-  if (tool === 'contour') status('Kies een bewerking en trek een streek over de rand van een actief masker.');
-  if (tool === 'selectBrush') status('Trek een streek over het gewenste oppervlak. Shift voegt toe, Alt trekt af.');
-  canvas.style.cursor = tool === 'orbit' ? 'grab' : tool === 'smartMask' && usesTrace() ? 'none' : 'crosshair';
-  for (const button of tools) button.classList.toggle('active', button.dataset.tool === next);
+  if (tool === 'contour') status('Choose an operation and drag over the edge of an active mask.');
+  if (tool === 'selectBrush') status('Drag over the surface you want to select. Hold Shift to add or Alt to subtract.');
+  const cursors = { orbit: 'grab', wand: 'url("' + wandImage + '") 20 5, crosshair' };
+  canvas.style.cursor = tool === 'smartMask' && usesTrace() ? 'none' : cursors[tool] ?? 'crosshair';
+  for (const button of tools) {
+    const activeTool = button.dataset.tool === next;
+    button.classList.toggle('active', activeTool);
+    button.setAttribute('aria-pressed', String(activeTool));
+  }
 }
 for (const button of tools) button.onclick = () => selectTool(button.dataset.tool);
 selectTool(tool);
@@ -404,9 +469,9 @@ function locksUI() {
   const selected = parseInt($('color').value.slice(1), 16);
   const locked = lockedColors.has(selected);
   const button = $('lockColor'), list = $('lockedColors');
-  button.textContent = locked ? 'Kleur ontgrendelen' : 'Kleur vergrendelen';
+  button.textContent = locked ? 'Unlock Color' : 'Lock Color';
   button.setAttribute('aria-pressed', String(locked));
-  list.replaceChildren(new Option('Vergrendelde kleuren (' + lockedColors.size + ')', ''));
+  list.replaceChildren(new Option('Locked colors (' + lockedColors.size + ')', ''));
   for (const color of lockedColors) list.add(new Option(hex(color), color));
   list.hidden = !lockedColors.size;
 }
@@ -423,14 +488,14 @@ $('lockColor').onclick = () => {
   }
   apply(!previous);
   record(() => apply(previous), () => apply(!previous));
-  status(hex(color) + (previous ? ' ontgrendeld.' : ' vergrendeld.'));
+  status(hex(color) + (previous ? ' unlocked.' : ' locked.'));
 };
 function maskUI() {
   $('clearMask').disabled = !mask;
   $('invertMask').disabled = !mask;
   let count = 0;
   if (mask) for (const value of mask) count += value;
-  $('maskCount').textContent = mask ? count.toLocaleString('nl-NL') + ' driehoeken geselecteerd' : 'Geen actief masker';
+  $('maskCount').textContent = mask ? count.toLocaleString('en-US') + ' triangles selected' : 'No active mask';
 }
 function changeMask(next) {
   proposedMask = null; tracedBoundary = null;
@@ -458,7 +523,7 @@ function selectionMask(selection, mode) {
 }
 function commitSelection(selection, mode) {
   changeMask(selectionMask(selection, mode));
-  status($('maskCount').textContent + '. Je schildert alleen binnen het masker.');
+  status($('maskCount').textContent + '. Painting is limited to the mask.');
 }
 function wand(face, event) {
   commitSelection(connectedFaces(face, $('wandMode').value), selectionMode(event));
@@ -541,13 +606,13 @@ function drawGuide() {
 }
 function drawPath(x, y, event) {
   if (!anchors.length && faceAt(x, y) < 0) {
-    status('Kies een beginpunt op het model.');
+    status('Choose a starting point on the model.');
     return;
   }
   anchors.push([x, y]);
   const required = tool === 'curve' ? 3 : 2;
   if (anchors.length < required) {
-    status(anchors.length === 1 && required === 3 ? 'Klik waar de curve naartoe buigt.' : 'Klik om het eindpunt vast te leggen.');
+    status(anchors.length === 1 && required === 3 ? 'Click the control point to shape the curve.' : 'Click to place the endpoint.');
     drawGuide();
     return;
   }
@@ -688,8 +753,8 @@ function usesTrace() {
 }
 function smartInstructions() {
   status(usesTrace()
-    ? 'Trek de gewenste rand met het kruispunt en klik op de kant die je wilt behouden.'
-    : 'Markeer met Shift wat erbij hoort en met Alt wat buiten het masker blijft. Kies daarna Voorstel tonen.');
+    ? 'Trace the boundary with the crosshair and click the side you want to keep.'
+    : 'Hold Shift to mark faces to include, or Alt to mark faces to exclude. Then choose Preview.');
 }
 function discardTrace() {
   if (!tracedBoundary) return false;
@@ -755,7 +820,7 @@ function finishTrace(dabs, end) {
   for (let i = 1; i < points.length; i++) {
     length += Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]);
   }
-  if (length < 12) { status('Sleep de crosshair langs de rand om een lijn te tekenen.'); drawGuide(); return; }
+  if (length < 12) { status('Drag the crosshair along the boundary.'); drawGuide(); return; }
   const first = points[0], last = points.at(-1);
   const dx = last[0] - first[0], dy = last[1] - first[1];
   const extensions = Math.hypot(dx, dy) < 9
@@ -764,7 +829,7 @@ function finishTrace(dabs, end) {
   tracedBoundary = { points, extensions };
   smartUI();
   drawGuide();
-  status('Klik op het zichtbare oppervlak aan de kant die je wilt behouden.');
+  status('Click the visible surface on the side you want to keep.');
 }
 function traceSide(start, width, height, boundary) {
   const area = new Uint8Array(width * height);
@@ -801,11 +866,11 @@ function traceSide(start, width, height, boundary) {
 }
 function previewTraceSide(x, y, mode) {
   const seed = faceAt(x, y);
-  if (seed < 0) { status('Klik op het model aan één kant van de getekende lijn.'); return; }
+  if (seed < 0) { status('Click the model on one side of the line.'); return; }
   const { width, height } = canvas;
   const [px, py] = pixelCoords(x, y).map(Math.floor);
   const area = traceSide(py * width + px, width, height, tracedBoundary);
-  if (!area) { status('Kies een punt verder van de lijn, of teken de rand opnieuw.'); return; }
+  if (!area) { status('Click farther from the line or redraw the boundary.'); return; }
   const grid = brushTiles ??= indexBrushTriangles();
   function onChosenSide(face) {
     const [cx, cy, depth] = faceCentroid(face);
@@ -815,14 +880,14 @@ function previewTraceSide(x, y, mode) {
     return hits[pixel] === face + 1 || centerVisible(face, cx, cy, depth, grid);
   }
   if (!onChosenSide(seed)) {
-    status('Dit vlak ligt op de grens. Klik iets verder van de getekende lijn.');
+    status('This face crosses the boundary. Click a little farther from the line.');
     return;
   }
   const selected = growFaces([seed], (_, face) => onChosenSide(face));
   proposedMask = selectionMask(selected, mode);
   smartUI();
   draw();
-  status('Voorstel in mintgroen. Klik op Toepassen of klik aan de andere kant.');
+  status('The preview is mint green. Click Apply or click the other side.');
 }
 function editableFaces(dabs, accepts) {
   const brush = brushGeometry(), faces = new Set();
@@ -836,7 +901,7 @@ function smartUI() {
   const marks = model?.maskMarks;
   let included = 0, excluded = 0;
   if (marks) for (const sign of marks.values()) sign > 0 ? included++ : excluded++;
-  $('seedCount').textContent = '+' + included.toLocaleString('nl-NL') + ' / −' + excluded.toLocaleString('nl-NL') + ' gemarkeerd';
+  $('seedCount').textContent = '+' + included.toLocaleString('en-US') + ' / −' + excluded.toLocaleString('en-US') + ' marked';
   $('maskSuggest').disabled = !included && !(excluded && mask);
   $('maskApply').disabled = !proposedMask;
   $('seedClear').disabled = !marks?.size;
@@ -935,12 +1000,12 @@ $('maskSuggest').onclick = () => {
   proposedMask = suggestMask(Number($('smartReach').value) / 100);
   smartUI();
   draw();
-  status('Voorstel in mintgroen. Klik op Toepassen of voeg meer markeringen toe.');
+  status('The preview is mint green. Click Apply or add more marks.');
 };
 $('maskApply').onclick = () => {
   if (stroke || !proposedMask) return;
   changeMask(proposedMask);
-  status($('maskCount').textContent + '. Het voorstel is toegepast.');
+  status($('maskCount').textContent + '. Mask applied.');
 };
 function contourValue(face, selection, mode, links) {
   const first = face * 3, own = selection[face];
@@ -978,11 +1043,11 @@ function editContour(dabs) {
     if (!changed) break;
   }
   if (!candidates.some(face => next[face] !== mask[face])) {
-    status('Geen contour gewijzigd. Trek de streek over de grens van het masker.');
+    status('No edge changed. Drag over the mask boundary.');
     return;
   }
   changeMask(next);
-  status('Contour bijgewerkt. ' + $('maskCount').textContent + '.');
+  status('Mask edge updated. ' + $('maskCount').textContent + '.');
 }
 function finishSelectionBrush(dabs, operation) {
   const seeds = new Set();
@@ -991,7 +1056,7 @@ function finishSelectionBrush(dabs, operation) {
     if (face >= 0) seeds.add(face);
   }
   if (!seeds.size) {
-    status('Geen zichtbaar vlak geraakt. Trek de streek over het model.');
+    status('No visible face was hit. Drag over the model.');
     return;
   }
   const { width, height } = canvas;
@@ -1037,7 +1102,7 @@ canvas.oncontextmenu = event => event.preventDefault();
 canvas.onpointerdown = event => {
   if (stroke || event.button > 2) return;
   const mode = event.button === 0 ? tool : 'orbit', layer = model.layers[active];
-  if (mode !== 'orbit' && mode !== 'pick' && mode !== 'wand' && !isMaskStroke(mode) && !layer.visible) { status('Maak de actieve laag zichtbaar om te schilderen.'); return; }
+  if (mode !== 'orbit' && mode !== 'pick' && mode !== 'wand' && !isMaskStroke(mode) && !layer.visible) { status('Show the active layer to paint on it.'); return; }
   const [x, y] = pointerCoords(event);
   hover = [x, y];
   if (mode === 'orbit' && discardTrace()) { smartInstructions(); draw(); }
@@ -1054,7 +1119,7 @@ canvas.onpointerdown = event => {
     return;
   }
   if (isMaskStroke(mode)) {
-    if (mode === 'contour' && !mask) { status('Maak eerst een masker om de contour te bewerken.'); return; }
+    if (mode === 'contour' && !mask) { status('Create a mask before refining its edge.'); return; }
     if (mode === 'smartMask' && proposedMask) { proposedMask = null; smartUI(); draw(); }
     const operation = mode === 'smartMask' ? (event.altKey ? -1 : event.shiftKey ? 1 : Number($('seedMode').value)) : selectionMode(event);
     stroke = { id: event.pointerId, mode, x, y, dabs: [[x, y]], operation };
@@ -1107,7 +1172,7 @@ function finishStroke(event) {
   }
   if (!changes.size) {
     if (mode !== 'orbit' && mode !== 'pick' && (mask || lockedColors.size)) {
-      status('Geen vlakken gewijzigd. Controleer het masker en de kleurvergrendeling.');
+      status('No faces changed. Check the mask and color locks.');
     }
     return;
   }
@@ -1115,7 +1180,7 @@ function finishStroke(event) {
     () => { for (const [face, previous] of changes) paintFace(layer, face, previous); },
     () => { for (const face of changes.keys()) paintFace(layer, face, value); }
   );
-  status(changes.size.toLocaleString('nl-NL') + ' driehoeken bijgewerkt.');
+  status(changes.size.toLocaleString('en-US') + ' triangles updated.');
 }
 canvas.onpointerup = canvas.onpointercancel = canvas.onlostpointercapture = finishStroke;
 canvas.onpointerleave = () => { hover = null; drawGuide(); };
@@ -1149,7 +1214,7 @@ document.addEventListener('keydown', event => {
   if (next) selectTool(next);
 });
 async function readBinarySTL(data, count, progress) {
-  if (count > limit) throw new Error('Meer dan ' + limitLabel + ' STL-driehoeken.');
+  if (count > limit) throw new Error('More than ' + limitLabel + ' STL triangles.');
   const points = [], faces = new Array(count * 3);
   // Store one vertex index per hash slot. Compare coordinates to resolve collisions.
   const slots = new Uint32Array(2 ** Math.ceil(Math.log2(count * 4)));
@@ -1159,7 +1224,7 @@ async function readBinarySTL(data, count, progress) {
     for (let p = 96 + face * 50, end = p + 36; p < end; p += 12) {
       const x = data.getFloat32(p, true), y = data.getFloat32(p + 4, true), z = data.getFloat32(p + 8, true);
       if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) {
-        throw new Error('Ongeldige STL-coördinaten.');
+        throw new Error('Invalid STL coordinates.');
       }
       // Positive and negative zero represent the same point.
       const hx = x ? data.getUint32(p, true) : 0;
@@ -1189,7 +1254,7 @@ async function readSTL(buffer, progress) {
   if (count && 84 + count * 50 === buffer.byteLength) return readBinarySTL(data, count, progress);
   const points = [], faces = [], known = new Map();
   function vertex(x, y, z) {
-    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) throw new Error('Ongeldige STL-coördinaten.');
+    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) throw new Error('Invalid STL coordinates.');
     const key = [x, y, z].join(',');
     if (!known.has(key)) {
       known.set(key, points.length / 3);
@@ -1198,24 +1263,24 @@ async function readSTL(buffer, progress) {
     faces.push(known.get(key));
   }
   const text = new TextDecoder().decode(buffer);
-  if (!/^\s*solid\b/i.test(text)) throw new Error('Onleesbaar STL-bestand.');
+  if (!/^\s*solid\b/i.test(text)) throw new Error('Could not read the STL file.');
   const number = '([+-]?(?:\\d+\\.?\\d*|\\.\\d+)(?:e[+-]?\\d+)?)';
   const pattern = new RegExp('^\\s*vertex[ \\t]+' + [number, number, number].join('[ \\t]+') + '[ \\t]*\\r?$', 'gmi');
   for (const [, x, y, z] of text.matchAll(pattern)) {
-    if (faces.length >= limit * 3) throw new Error('Meer dan ' + limitLabel + ' STL-driehoeken.');
+    if (faces.length >= limit * 3) throw new Error('More than ' + limitLabel + ' STL triangles.');
     vertex(Number(x), Number(y), Number(z));
     if (faces.length % (importBatch * 3) === 0) await progress(faces.length / 3);
   }
-  if (!faces.length || faces.length % 3) throw new Error('Onleesbaar STL-bestand.');
+  if (!faces.length || faces.length % 3) throw new Error('Could not read the STL file.');
   return { points, faces };
 }
 function paletteEntries(entries) {
-  if (!Array.isArray(entries) || entries.length > 10000) throw new Error('Ongeldig mengpalet.');
+  if (!Array.isArray(entries) || entries.length > 10000) throw new Error('Invalid mixed-color palette.');
   return entries.map(item => {
     const { name, hex, recipe = '' } = item ?? {};
     if (typeof name !== 'string' || !name.trim() || typeof hex !== 'string' ||
         !/^#[0-9a-f]{6}$/i.test(hex.trim()) || typeof recipe !== 'string') {
-      throw new Error('Gebruik per mengkleur een naam en een hexkleur (#RRGGBB). Een recept is optioneel.');
+      throw new Error('Use a name and a hex color (#RRGGBB) for each mix. A recipe is optional.');
     }
     return { name: name.trim(), hex: hex.trim().toUpperCase(), recipe: recipe.trim() };
   });
@@ -1238,20 +1303,20 @@ function readCSV(text) {
       }
     } else field += char;
   }
-  if (quoted) throw new Error('Onafgesloten aanhalingstekens in het CSV-bestand.');
+  if (quoted) throw new Error('Unclosed quotation marks in the CSV file.');
   row.push(field);
   if (row.some(value => value.trim())) rows.push(row);
   const header = (rows.shift() ?? []).map(value => value.trim().toLowerCase());
   const name = header.findIndex(value => value === 'naam' || value === 'name');
   const hex = header.indexOf('hex');
   const recipe = header.findIndex(value => value === 'recept' || value === 'recipe');
-  if (name < 0 || hex < 0) throw new Error('Gebruik een CSV met de kolommen naam, hex en optioneel recept.');
+  if (name < 0 || hex < 0) throw new Error('Use a CSV with name and hex columns and an optional recipe column.');
   return rows.map(values => ({ name: values[name], hex: values[hex], recipe: values[recipe] }));
 }
 function setPalette(entries) {
   palette = entries;
   const select = $('mix');
-  select.replaceChildren(new Option('Kies een mengkleur', ''));
+  select.replaceChildren(new Option('Choose a mixed color', ''));
   for (const [i, item] of entries.entries()) select.add(new Option(item.name + ' · ' + item.hex, i));
   select.hidden = !entries.length;
   $('recipe').textContent = '';
@@ -1269,9 +1334,9 @@ $('paletteFile').onchange = async event => {
   try {
     const text = await file.text();
     const entries = paletteEntries(/\.csv$/i.test(file.name) ? readCSV(text) : JSON.parse(text).colors);
-    if (!entries.length) throw new Error('Dit palet bevat geen mengkleuren.');
+    if (!entries.length) throw new Error('This palette contains no mixed colors.');
     setPalette(entries);
-    status(entries.length + ' mengkleuren geïmporteerd.');
+    status(entries.length + ' mixed colors imported.');
   } catch (error) { status(error.message); }
 };
 function encodeMask() {
@@ -1289,13 +1354,13 @@ function encodeMask() {
 }
 function decodeMask(runs, count) {
   if (runs === null) return null;
-  if (!Array.isArray(runs) || runs.length % 2 || runs.length > count * 2) throw new Error('Ongeldig masker.');
+  if (!Array.isArray(runs) || runs.length % 2 || runs.length > count * 2) throw new Error('Invalid mask.');
   const next = new Uint8Array(count);
   let previous = 0;
   for (let i = 0; i < runs.length; i += 2) {
     const start = runs[i], end = runs[i + 1];
     if (!Number.isInteger(start) || !Number.isInteger(end) || start < previous || end <= start || end > count) {
-      throw new Error('Ongeldig masker.');
+      throw new Error('Invalid mask.');
     }
     next.fill(1, start, end);
     previous = end;
@@ -1304,20 +1369,20 @@ function decodeMask(runs, count) {
 }
 function openProject(data) {
   if (data?.version !== 1 || !Array.isArray(data.layers) || !data.layers.length || !Array.isArray(data.faces)) {
-    throw new Error('Onbekend Meshpaint-projectformaat.');
+    throw new Error('Unknown Meshpaint project format.');
   }
   const layers = data.layers.map(layer => {
     if (typeof layer?.name !== 'string' || typeof layer.visible !== 'boolean' || !Array.isArray(layer.paint) ||
         !layer.paint.every(entry => Array.isArray(entry) && entry.length === 2 && Number.isInteger(entry[0]) &&
           entry[0] >= 0 && entry[0] < data.faces.length / 3 && Number.isInteger(entry[1]) &&
-          entry[1] >= 0 && entry[1] <= 0xffffff)) throw new Error('Ongeldige verflaag.');
+          entry[1] >= 0 && entry[1] <= 0xffffff)) throw new Error('Invalid paint layer.');
     return { ...layer, paint: new Map(layer.paint) };
   });
   const entries = paletteEntries(data.mixPalette ?? []);
   const next = makeModel(data.name, data.points, data.faces, layers);
   const locks = data.lockedColors ?? [];
   if (!Array.isArray(locks) || locks.some(color => !Number.isInteger(color) || color < 0 || color > 0xffffff)) {
-    throw new Error('Ongeldige kleurvergrendeling.');
+    throw new Error('Invalid color lock.');
   }
   const nextMask = decodeMask(data.maskRuns ?? null, data.faces.length / 3);
   replaceModel(next, nextMask, new Set(locks));
@@ -1335,27 +1400,27 @@ async function openFile(file) {
   if (!file) return;
   const id = ++importId;
   const cancelled = () => id !== importId;
-  status(file.name + ' laden…');
+  status(file.name + ' loading…');
   try {
     if (/\.stl$/i.test(file.name)) {
       const buffer = await file.arrayBuffer();
       if (cancelled()) return;
       const { points, faces } = await readSTL(buffer, async (loaded, total) => {
-        if (cancelled()) throw new Error('Import vervangen.');
-        const progress = total ? Math.floor(100 * loaded / total) + '%' : loaded.toLocaleString('nl-NL') + ' driehoeken';
-        status(file.name + ' lezen · ' + progress);
+        if (cancelled()) throw new Error('Import superseded.');
+        const progress = total ? Math.floor(100 * loaded / total) + '%' : loaded.toLocaleString('en-US') + ' triangles';
+        status(file.name + ' reading · ' + progress);
         await new Promise(resolve => setTimeout(resolve, 0));
       });
       if (cancelled()) return;
-      replaceModel(makeModel(file.name.slice(0, -4), points, faces, [newLayer('Verflaag 1')]));
+      replaceModel(makeModel(file.name.slice(0, -4), points, faces, [newLayer('Paint Layer 1')]));
     } else if (/\.meshpaint$/i.test(file.name)) {
       const text = await file.text();
       if (cancelled()) return;
       openProject(JSON.parse(text));
-    } else throw new Error('Kies een STL- of .meshpaint-bestand.');
-    status(model.name + ' geopend.');
+    } else throw new Error('Choose an STL or .meshpaint file.');
+    status(model.name + ' opened.');
   } catch (error) {
-    if (!cancelled()) status('Openen mislukt. ' + error.message);
+    if (!cancelled()) status('Could not open the file. ' + error.message);
   }
 }
 $('open').onclick = () => $('file').click();
@@ -1374,8 +1439,8 @@ function download(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 $('example').onclick = () => download(
-  new Blob(['naam,hex,recept\nViolet,#864CB7,50% magenta + 50% cyaan\n'], { type: 'text/csv' }),
-  'mengkleuren-voorbeeld.csv'
+  new Blob(['name,hex,recipe\nViolet,#864CB7,50% magenta + 50% cyan\n'], { type: 'text/csv' }),
+  'mixed-colors-example.csv'
 );
 let dbPromise, saveUrl;
 function recovery(copy) {
@@ -1400,10 +1465,10 @@ function showRecovery() {
 $('restore').onclick = async () => {
   try {
     const copy = await recovery();
-    if (!copy) { status('Er is geen herstelkopie beschikbaar.'); return; }
-    if (!confirm('Herstelkopie openen? Dit vervangt het geopende model.')) return;
+    if (!copy) { status('No recovery copy is available.'); return; }
+    if (!confirm('Open the recovery copy and replace the current model?')) return;
     await openFile(new File([copy.blob], copy.filename, { type: 'application/json' }));
-  } catch (error) { status('Herstelkopie openen mislukt. ' + error.message); }
+  } catch (error) { status('Could not open the recovery copy. ' + error.message); }
 };
 $('save').onclick = async () => {
   if ($('save').disabled) return;
@@ -1422,13 +1487,13 @@ $('save').onclick = async () => {
     link.href = saveUrl; link.download = filename; link.hidden = false;
     $('saved').hidden = false;
     link.click();
-    status('Download aangevraagd. Gebruik de downloadlink rechts als hij niet start.');
+    status('Download requested. If it does not start, use the download link on the right.');
     try {
       await recovery({ blob, filename });
       showRecovery();
-      status('Herstelkopie bewaard. Gebruik de downloadlink rechts als de download niet start.');
-    } catch { status('Gebruik Download .meshpaint rechts als de download niet start.'); }
-  } catch (error) { status('Project opslaan mislukt. ' + error.message); }
+      status('Recovery copy saved. If the download does not start, use the link on the right.');
+    } catch { status('If the download does not start, use Download .meshpaint on the right.'); }
+  } catch (error) { status('Could not save the project. ' + error.message); }
   finally { $('save').disabled = false; }
 };
 recovery().then(copy => { if (copy) showRecovery(); }).catch(() => {});
@@ -1513,11 +1578,11 @@ function make3MF() {
 $('export').onclick = () => {
   try {
     download(make3MF(), safeName(model.name) + '.3mf');
-    status('3MF-download aangevraagd. De zichtbare kleuren zijn opgenomen. STL-maten zijn gelezen als millimeters.');
-  } catch (error) { status('3MF exporteren mislukt. ' + error.message); }
+    status('3MF download requested with the visible colors. STL units were treated as millimeters.');
+  } catch (error) { status('Could not export 3MF. ' + error.message); }
 };
 function demo() {
-  const points = [], faces = [], paint = newLayer('Voorbeeldkleuren');
+  const points = [], faces = [], paint = newLayer('Demo Colors');
   const profile = [[13,0],[15,4],[15,8],[20,11],[23,18],[24,28],[24,50],[22,62],[18,72],[12,81],[5,88],[1,90]];
   const rings = [], segments = 64;
   for (let i = 0; i < profile.length - 1; i++) {
@@ -1558,12 +1623,12 @@ function demo() {
     triangle(bottom, next, s, 0x5a5299);
     triangle(top, last + s, last + next, 0xf38167);
   }
-  return makeModel('Verkenner - voorbeeld', points, faces, [paint, newLayer('Verflaag 1')]);
+  return makeModel('Explorer — Demo', points, faces, [paint, newLayer('Paint Layer 1')]);
 }
 resize();
 setModel(demo());
 new ResizeObserver(resize).observe(canvas);
-status('Open een STL of schilder op het voorbeeld. Rechts slepen draait, scrollen zoomt.');
+status('Open an STL or paint the demo. Right-drag to orbit, scroll to zoom.');
 })();
 </script>
 </html>
